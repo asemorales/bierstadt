@@ -1,0 +1,95 @@
+// The Bierstadt bar. Colours come from _room.scss, which bierstadt-bar points at
+// _dark.scss or _light.scss. Like the GTK theme there is no accent colour:
+// the current plate is ink and underlined, the rest are pencil grey.
+
+@import "room";
+
+* {
+  all: unset;
+}
+
+.bar {
+  background-color: $page;
+  border-bottom: 1px solid $rule;
+  padding: 0 24px;
+  color: $text;
+  font-family: "Source Serif 4";
+  font-size: 15px;
+  font-feature-settings: "smcp 1, c2sc 1, onum 1";
+}
+
+.word {
+  color: $dim;
+}
+
+.word:hover {
+  color: $text;
+}
+
+.sep {
+  color: $mid;
+}
+
+.plate {
+  padding: 0 6px;
+  color: $mid;
+  border-bottom: 1px solid transparent;
+}
+
+.plate:hover {
+  color: $dim;
+}
+
+.plate.on {
+  color: $text;
+  border-bottom-color: $text;
+}
+
+.clock {
+  color: $text;
+}
+
+// The volume: a hairline rule with a small ink dot, no accent colour.
+.slider {
+  min-width: 90px;
+}
+
+.slider trough {
+  min-height: 2px;
+  border-radius: 1px;
+  background-color: $rule;
+}
+
+.slider highlight {
+  border-radius: 1px;
+  background-color: $dim;
+}
+
+.slider slider {
+  min-width: 10px;
+  min-height: 10px;
+  margin: -4px;
+  border-radius: 50%;
+  background-color: $text;
+}
+
+.slider.muted highlight,
+.slider.muted slider {
+  background-color: $mid;
+}
+
+.fin {
+  margin-left: 10px;
+  font-family: "Newsreader";
+  font-style: italic;
+  font-feature-settings: "smcp 0, c2sc 0";
+}
+
+tooltip {
+  background-color: $panel;
+  border: 1px solid $frame;
+  color: $text;
+  padding: 6px 10px;
+  font-family: "Inter";
+  font-size: 13px;
+}

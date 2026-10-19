@@ -1,0 +1,12 @@
+[Desktop Entry]
+Type=X-GNOME-Metatheme
+Name=bierstadt-dark
+Comment=Quiet Bierstadt theme matching asemorales.github.io
+Encoding=UTF-8
+
+[X-GNOME-Metatheme]
+GtkTheme=bierstadt-dark
+MetacityTheme=bierstadt-dark
+IconTheme=bierstadt-dark
+CursorTheme=Adwaita
+ButtonLayout=close,maximize,minimize:

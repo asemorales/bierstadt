@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Bierstadt bar
+Comment=The eww running head, in place of the Xfce panel
+Exec=sh -c "sleep 3; $HOME/.local/bin/bierstadt-bar start"
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-enabled=true

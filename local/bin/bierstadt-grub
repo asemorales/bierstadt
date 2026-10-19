@@ -1,0 +1,88 @@
+#!/usr/bin/env bash
+# bierstadt-grub: dress the boot menu (GRUB) in the current room, like the login screen.
+#
+#   bierstadt-grub        build the theme from the first painting of the room,
+#                       install it to /boot/grub/themes/bierstadt, point
+#                       /etc/default/grub at it and run update-grub (asks for sudo)
+#
+# The theme itself is built by themes/bierstadt/grub-build.py. Run this again
+# after `bierstadt-mode light|dark` or after changing the paintings, alongside
+# bierstadt-greeter. The first /etc/default/grub is kept as /etc/default/grub.pre-bierstadt.
+
+set -euo pipefail
+
+DATA_DIR="$HOME/.local/share/bierstadt"
+STATE_DIR="$HOME/.local/state/bierstadt"
+TSV="$DATA_DIR/paintings.tsv"
+BUILD="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)/themes/bierstadt/grub-build.py"
+OUT="$DATA_DIR/grub"
+DEST=/boot/grub/themes/bierstadt
+CONF=/etc/default/grub
+DEFAULT_MODE=dark
+
+mode=$(cat "$STATE_DIR/mode" 2>/dev/null || echo "$DEFAULT_MODE")
+
+# wall.yml's `login` painting, the same on the boot menu and the login screen,
+# or else the painting on the room's first workspace.
+key=$(head -n 1 "$DATA_DIR/login" 2>/dev/null || true)
+[ -n "$key" ] || key=$(head -n 1 "$DATA_DIR/room-$mode")
+painting=$(awk -F'\t' -v k="$key" '$1 == k { print $2 }' "$TSV")
+caption=$(awk -F'\t' -v k="$key" '$1 == k { print $7 }' "$TSV")
+[ -s "$painting" ] || { echo "no painting for $key; run bierstadt-mode data" >&2; exit 1; }
+
+rm -rf "$OUT"
+python3 -I "$BUILD" "$mode" "$painting" "$caption" "$OUT"
+
+sudo -v
+sudo rm -rf "$DEST"
+sudo install -d "$DEST"
+sudo install -m644 "$OUT"/* "$DEST/"
+
+# Keep the first original, then set only the keys Bierstadt owns.
+# The firmware only offers the panel's native 4K, so the theme is drawn for it.
+[ -e "$CONF.pre-bierstadt" ] || sudo cp -p "$CONF" "$CONF.pre-bierstadt"
+tmp=$(mktemp)
+python3 -I - "$CONF" > "$tmp" \
+  "GRUB_THEME=\"$DEST/theme.txt\"" \
+  "GRUB_GFXMODE=\"3840x2160,auto\"" \
+  "GRUB_TERMINAL_OUTPUT=\"gfxterm\"" <<'PY'
+import sys
+path, pairs = sys.argv[1], dict(kv.split("=", 1) for kv in sys.argv[2:])
+lines = open(path, encoding="utf-8").read().splitlines()
+seen = set()
+for i, line in enumerate(lines):
+    key = line.split("=", 1)[0].strip()
+    if key in pairs:
+        lines[i] = f"{key}={pairs[key]}"
+        seen.add(key)
+lines += [f"{k}={v}" for k, v in pairs.items() if k not in seen]
+print("\n".join(lines))
+PY
+# grub-customizer's wallpaper and colours (GRUB_MENU_PICTURE, GRUB_COLOR_*)
+# become the console's background through 05_debian_theme, so they go.
+sed -i -E '/^(export )?GRUB_(MENU_PICTURE|COLOR_NORMAL|COLOR_HIGHLIGHT)=/d' "$tmp"
+sudo install -m644 "$tmp" "$CONF"
+rm -f "$tmp"
+
+# The console and editor text sits on kitty's background, inside the theme's
+# terminal box. background_color drops any background_image 05_debian_theme
+# loaded, and gfxterm paints black text cells in this colour.
+if [ "$mode" = dark ]; then
+  bg="#191612"; normal=light-gray/black; highlight=black/light-gray
+else
+  bg="#F2ECDF"; normal=black/black; highlight=black/white
+fi
+sudo tee /etc/grub.d/06_bierstadt >/dev/null <<EOF
+#!/bin/sh
+# Written by bierstadt-grub ($mode room); edit that, not this.
+cat <<'CFG'
+insmod gfxterm_background
+background_color "$bg"
+set color_normal=$normal
+set color_highlight=$highlight
+CFG
+EOF
+sudo chmod 755 /etc/grub.d/06_bierstadt
+
+sudo update-grub
+echo "boot menu: $mode, $key. Seen at the next boot."

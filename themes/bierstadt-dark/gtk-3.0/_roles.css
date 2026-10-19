@@ -1,0 +1,68 @@
+/* bierstadt-dark (dark): gwern.net's dark theme. What each palette colour is used for. */
+
+@define-color g_bg            @night;
+@define-color g_bg_alt        @night_panel;    /* sidebars, like gwern's TOC */
+@define-color g_view          @night;
+@define-color g_header        @night;
+@define-color g_header_back   @night;
+@define-color g_panel         alpha(@night, 0.90);
+@define-color g_popover       @night_panel;
+@define-color g_border        @night_rule;     /* hairlines */
+@define-color g_frame         @night_frame;    /* menu and card borders */
+@define-color g_border_strong @night_mid;
+@define-color g_border_hover  @night_dim;
+@define-color g_rule          @night_dim;      /* heading rules */
+
+@define-color g_fg            @night_text;
+@define-color g_fg_strong     #FFFCF6;
+@define-color g_fg_dim        @night_dim;
+@define-color g_fg_disabled   @night_mid;
+
+@define-color g_hover         @night_hover;
+@define-color g_active        mix(@night_hover, @night_mid, 0.3);
+@define-color g_selected_bg   @night_sel;      /* inverted, like gwern.net */
+@define-color g_selected_fg   #000000;
+/* Selected rows in lists, sidebars and file views. Not inverted: the icons are
+   pale, and they would vanish on a pale row. */
+@define-color g_item_sel_bg   @night_frame;
+@define-color g_item_sel_fg   #FFFCF6;
+@define-color g_trough        @night_panel;
+@define-color g_slider        @night_mid;
+@define-color g_slider_hover  @night_dim;
+@define-color g_knob          @night;
+
+@define-color g_primary_bg    @night_text;
+@define-color g_primary_hover @night_sel;
+@define-color g_primary_fg    @night;
+
+@define-color g_tooltip_bg    @night_panel;
+@define-color g_tooltip_fg    @night_text;
+
+@define-color g_accent        @night_sel;      /* no colour accent */
+@define-color g_shadow        alpha(black, 0.25);
+@define-color g_shadow_strong alpha(black, 0.40);
+
+@define-color theme_bg_color            @g_bg;
+@define-color theme_fg_color            @g_fg;
+@define-color theme_base_color          @g_view;
+@define-color theme_text_color          @g_fg;
+@define-color theme_selected_bg_color   @g_selected_bg;
+@define-color theme_selected_fg_color   @g_selected_fg;
+@define-color insensitive_bg_color      @g_bg;
+@define-color insensitive_fg_color      @g_fg_disabled;
+@define-color insensitive_base_color    @g_bg;
+@define-color theme_unfocused_bg_color  @g_bg;
+@define-color theme_unfocused_fg_color  @g_fg;
+@define-color theme_unfocused_base_color @g_view;
+@define-color theme_unfocused_text_color @g_fg;
+@define-color theme_unfocused_selected_bg_color @g_selected_bg;
+@define-color theme_unfocused_selected_fg_color @g_selected_fg;
+@define-color borders                   @g_border;
+@define-color unfocused_borders         @g_border;
+@define-color warning_color             @night_text;
+@define-color error_color               @night_text;
+@define-color success_color             @night_text;
+@define-color wm_title                  @g_fg;
+@define-color wm_unfocused_title        @g_fg_dim;
+@define-color wm_bg                     @g_header;
+@define-color wm_unfocused_bg           @g_header_back;

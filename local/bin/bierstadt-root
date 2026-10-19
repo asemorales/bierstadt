@@ -1,0 +1,90 @@
+#!/usr/bin/env python3
+# bierstadt-root: fill the X root window with one colour, the way hsetroot does.
+#
+#   bierstadt-root '#191612'
+#
+# xsetroot -solid is not enough under xfwm4's compositor. The compositor
+# paints the root from the pixmap named in _XROOTPMAP_ID / ESETROOT_PMAP_ID,
+# tiled. The login screen leaves its 1920x1080 picture there, so at
+# 3840x2160 it shows 2x2 until xfdesktop draws. This frees that pixmap and
+# publishes a 1x1 pixmap of the colour instead.
+
+import ctypes
+import ctypes.util
+import sys
+
+colour = sys.argv[1] if len(sys.argv) > 1 else "#191612"
+rgb = int(colour.lstrip("#"), 16)
+
+x = ctypes.CDLL(ctypes.util.find_library("X11") or "libX11.so.6")
+x.XOpenDisplay.restype = ctypes.c_void_p
+x.XOpenDisplay.argtypes = [ctypes.c_char_p]
+dpy = x.XOpenDisplay(None)
+if not dpy:
+    sys.exit("bierstadt-root: cannot open display")
+
+ulong = ctypes.c_ulong
+for name, res, args in [
+    ("XDefaultScreen", ctypes.c_int, [ctypes.c_void_p]),
+    ("XRootWindow", ulong, [ctypes.c_void_p, ctypes.c_int]),
+    ("XDefaultDepth", ctypes.c_int, [ctypes.c_void_p, ctypes.c_int]),
+    ("XInternAtom", ulong, [ctypes.c_void_p, ctypes.c_char_p, ctypes.c_int]),
+    ("XCreatePixmap", ulong, [ctypes.c_void_p, ulong, ctypes.c_uint, ctypes.c_uint, ctypes.c_uint]),
+    ("XCreateGC", ctypes.c_void_p, [ctypes.c_void_p, ulong, ulong, ctypes.c_void_p]),
+    ("XSetForeground", ctypes.c_int, [ctypes.c_void_p, ctypes.c_void_p, ulong]),
+    ("XFillRectangle", ctypes.c_int, [ctypes.c_void_p, ulong, ctypes.c_void_p, ctypes.c_int, ctypes.c_int, ctypes.c_uint, ctypes.c_uint]),
+    ("XFreeGC", ctypes.c_int, [ctypes.c_void_p, ctypes.c_void_p]),
+    ("XGetWindowProperty", ctypes.c_int, [ctypes.c_void_p, ulong, ulong, ctypes.c_long, ctypes.c_long, ctypes.c_int, ulong,
+                                          ctypes.POINTER(ulong), ctypes.POINTER(ctypes.c_int), ctypes.POINTER(ulong),
+                                          ctypes.POINTER(ulong), ctypes.POINTER(ctypes.c_void_p)]),
+    ("XFree", ctypes.c_int, [ctypes.c_void_p]),
+    ("XKillClient", ctypes.c_int, [ctypes.c_void_p, ulong]),
+    ("XChangeProperty", ctypes.c_int, [ctypes.c_void_p, ulong, ulong, ulong, ctypes.c_int, ctypes.c_int, ctypes.c_void_p, ctypes.c_int]),
+    ("XSetWindowBackgroundPixmap", ctypes.c_int, [ctypes.c_void_p, ulong, ulong]),
+    ("XClearWindow", ctypes.c_int, [ctypes.c_void_p, ulong]),
+    ("XSetCloseDownMode", ctypes.c_int, [ctypes.c_void_p, ctypes.c_int]),
+    ("XCloseDisplay", ctypes.c_int, [ctypes.c_void_p]),
+]:
+    fn = getattr(x, name)
+    fn.restype, fn.argtypes = res, args
+
+XA_PIXMAP, PROP_MODE_REPLACE, RETAIN_PERMANENT = 20, 0, 1
+screen = x.XDefaultScreen(dpy)
+root = x.XRootWindow(dpy, screen)
+depth = x.XDefaultDepth(dpy, screen)
+xrootpmap = x.XInternAtom(dpy, b"_XROOTPMAP_ID", 0)
+esetroot = x.XInternAtom(dpy, b"ESETROOT_PMAP_ID", 0)
+
+
+def pixmap_of(atom):
+    kind, fmt, n, after = ulong(), ctypes.c_int(), ulong(), ulong()
+    data = ctypes.c_void_p()
+    ok = x.XGetWindowProperty(dpy, root, atom, 0, 1, 0, XA_PIXMAP, ctypes.byref(kind), ctypes.byref(fmt),
+                              ctypes.byref(n), ctypes.byref(after), ctypes.byref(data))
+    pid = 0
+    if ok == 0 and data.value:
+        if kind.value == XA_PIXMAP and n.value == 1:
+            pid = ctypes.cast(data, ctypes.POINTER(ulong))[0]
+        x.XFree(data)
+    return pid
+
+
+# Free the old picture, as Esetroot-aware setters do. Only when both
+# properties agree, so we never kill a client that merely shares the id.
+old = pixmap_of(xrootpmap)
+if old and old == pixmap_of(esetroot):
+    x.XKillClient(dpy, old)
+
+pix = x.XCreatePixmap(dpy, root, 1, 1, depth)
+gc = x.XCreateGC(dpy, pix, 0, None)
+x.XSetForeground(dpy, gc, rgb)  # TrueColor 24-bit visual: the pixel is the RGB value
+x.XFillRectangle(dpy, pix, gc, 0, 0, 1, 1)
+x.XFreeGC(dpy, gc)
+
+pid = ulong(pix)
+for atom in (xrootpmap, esetroot):
+    x.XChangeProperty(dpy, root, atom, XA_PIXMAP, 32, PROP_MODE_REPLACE, ctypes.byref(pid), 1)
+x.XSetWindowBackgroundPixmap(dpy, root, pix)
+x.XClearWindow(dpy, root)
+x.XSetCloseDownMode(dpy, RETAIN_PERMANENT)
+x.XCloseDisplay(dpy)

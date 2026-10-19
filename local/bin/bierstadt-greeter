@@ -1,0 +1,78 @@
+#!/usr/bin/env bash
+# bierstadt-greeter: dress the login screen (lightdm-gtk-greeter) in the current room.
+#
+#   bierstadt-greeter        copy the theme, icons, fonts and first painting into
+#                          system folders and point the greeter at them (asks for sudo)
+#
+# The greeter runs as the lightdm user, which cannot read ~/.themes or
+# ~/.local, so everything is copied under /usr/local/share. Run it again after
+# `bierstadt-mode light|dark`, after rebuilding the themes, or after changing
+# the paintings.
+
+set -euo pipefail
+
+DATA_DIR="$HOME/.local/share/bierstadt"
+STATE_DIR="$HOME/.local/state/bierstadt"
+TSV="$DATA_DIR/paintings.tsv"
+THEMES="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)/themes"
+ICONS="$HOME/.local/share/icons"
+FONTS="$HOME/.local/share/fonts/bierstadt"
+CONF=/etc/lightdm/lightdm-gtk-greeter.conf
+SHARE=/usr/local/share
+DEFAULT_MODE=dark
+
+mode=$(cat "$STATE_DIR/mode" 2>/dev/null || echo "$DEFAULT_MODE")
+if [ "$mode" = dark ]; then theme=bierstadt-dark; else theme=bierstadt; fi
+
+# wall.yml's `login` painting, the same on the boot menu and the login screen,
+# or else the painting on the room's first workspace.
+key=$(head -n 1 "$DATA_DIR/login" 2>/dev/null || true)
+[ -n "$key" ] || key=$(head -n 1 "$DATA_DIR/room-$mode")
+painting=$(awk -F'\t' -v k="$key" '$1 == k { print $2 }' "$TSV")
+[ -s "$painting" ] || { echo "no painting for $key; run bierstadt-mode data" >&2; exit 1; }
+
+sudo -v
+sudo install -d "$SHARE/themes" "$SHARE/icons" "$SHARE/fonts/bierstadt"
+
+# bierstadt-dark imports from ../../Bierstadt, so both themes go together.
+for t in bierstadt bierstadt-dark; do
+  sudo rm -rf "$SHARE/themes/$t"
+  sudo cp -rL "$THEMES/$t" "$SHARE/themes/$t"
+done
+sudo rm -rf "$SHARE/icons/$theme"
+sudo cp -a "$ICONS/$theme" "$SHARE/icons/$theme"
+sudo chown -R root:root "$SHARE/themes/bierstadt" "$SHARE/themes/bierstadt-dark" "$SHARE/icons/$theme"
+sudo gtk-update-icon-cache -qf "$SHARE/icons/$theme" 2>/dev/null || true
+
+sudo install -m644 "$FONTS"/SourceSerif4*.ttf "$FONTS"/IBMPlexMono-*.ttf "$SHARE/fonts/bierstadt/"
+sudo fc-cache -f "$SHARE/fonts" >/dev/null
+
+sudo install -Dm644 "$painting" "$SHARE/backgrounds/bierstadt/greeter.jpg"
+
+# Keep the first original, then set only the keys Bierstadt owns.
+[ -e "$CONF.pre-bierstadt" ] || sudo cp -p "$CONF" "$CONF.pre-bierstadt"
+tmp=$(mktemp)
+python3 -I - "$CONF" > "$tmp" \
+  "theme-name=$theme" \
+  "icon-theme-name=$theme" \
+  "font-name=Inter 10" \
+  "cursor-theme-name=Adwaita" \
+  "background=$SHARE/backgrounds/bierstadt/greeter.jpg" \
+  "user-background=false" <<'PY'
+import sys
+path, pairs = sys.argv[1], dict(kv.split("=", 1) for kv in sys.argv[2:])
+lines = open(path, encoding="utf-8").read().splitlines()
+seen = set()
+for i, line in enumerate(lines):
+    key = line.split("=", 1)[0].strip()
+    if key in pairs:
+        lines[i] = f"{key} = {pairs[key]}"
+        seen.add(key)
+at = lines.index("[greeter]") + 1 if "[greeter]" in lines else len(lines)
+lines[at:at] = [f"{k} = {v}" for k, v in pairs.items() if k not in seen]
+print("\n".join(lines))
+PY
+sudo install -m644 "$tmp" "$CONF"
+rm -f "$tmp"
+
+echo "login screen: $theme, $key. Seen at the next logout."

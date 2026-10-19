@@ -1,0 +1,68 @@
+/* Bierstadt (light): a book page. What each palette colour is used for. */
+
+@define-color g_bg            @paper;
+@define-color g_bg_alt        @linen;          /* sidebars, alternate rows */
+@define-color g_view          @paper;
+@define-color g_header        @paper;
+@define-color g_header_back   @paper;
+@define-color g_panel         alpha(@paper, 0.88);
+@define-color g_popover       @paper;
+@define-color g_border        @stone;          /* hairlines */
+@define-color g_frame         alpha(@ink, 0.35); /* menu and card borders */
+@define-color g_border_strong alpha(@ink, 0.35);
+@define-color g_border_hover  alpha(@ink, 0.70);
+@define-color g_rule          alpha(@ink, 0.45); /* heading rules */
+
+@define-color g_fg            alpha(@ink, 0.88);
+@define-color g_fg_strong     @ink;
+@define-color g_fg_dim        alpha(@ink, 0.62);
+@define-color g_fg_disabled   @muted;
+
+@define-color g_hover         alpha(@ink, 0.06);
+@define-color g_active        alpha(@ink, 0.11);
+@define-color g_selected_bg   @ink;            /* inverted, like gwern.net */
+@define-color g_selected_fg   @paper;
+/* Selected rows in lists, sidebars and file views: a stone tint rather than
+   ink, so the dark icons stay readable. */
+@define-color g_item_sel_bg   @stone;
+@define-color g_item_sel_fg   @ink;
+@define-color g_trough        @stone;
+@define-color g_slider        alpha(@ink, 0.35);
+@define-color g_slider_hover  alpha(@ink, 0.60);
+@define-color g_knob          @paper;
+
+@define-color g_primary_bg    @ink;
+@define-color g_primary_hover alpha(@ink, 0.82);
+@define-color g_primary_fg    @paper;
+
+@define-color g_tooltip_bg    @ink;
+@define-color g_tooltip_fg    @paper;
+
+@define-color g_accent        @ink;            /* no colour accent */
+@define-color g_shadow        alpha(@ink, 0.06);
+@define-color g_shadow_strong alpha(@ink, 0.10);
+
+@define-color theme_bg_color            @g_bg;
+@define-color theme_fg_color            @g_fg;
+@define-color theme_base_color          @g_view;
+@define-color theme_text_color          @g_fg;
+@define-color theme_selected_bg_color   @g_selected_bg;
+@define-color theme_selected_fg_color   @g_selected_fg;
+@define-color insensitive_bg_color      @g_bg;
+@define-color insensitive_fg_color      @g_fg_disabled;
+@define-color insensitive_base_color    @g_bg;
+@define-color theme_unfocused_bg_color  @g_bg;
+@define-color theme_unfocused_fg_color  @g_fg;
+@define-color theme_unfocused_base_color @g_view;
+@define-color theme_unfocused_text_color @g_fg;
+@define-color theme_unfocused_selected_bg_color @g_selected_bg;
+@define-color theme_unfocused_selected_fg_color @g_selected_fg;
+@define-color borders                   @g_border;
+@define-color unfocused_borders         @g_border;
+@define-color warning_color             @ink;
+@define-color error_color               @ink;
+@define-color success_color             @ink;
+@define-color wm_title                  @g_fg;
+@define-color wm_unfocused_title        @g_fg_dim;
+@define-color wm_bg                     @g_header;
+@define-color wm_unfocused_bg           @g_header_back;

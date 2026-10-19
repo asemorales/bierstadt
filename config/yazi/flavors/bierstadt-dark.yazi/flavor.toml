@@ -1,0 +1,115 @@
+# Bierstadt Dark: the dark room, gwern.net's dark page tinted brown.
+# Same colours as the GTK theme (themes/bierstadt/gtk-3.0/_palette.css).
+# No accent colour. Weight, italics and inversion do the work.
+
+#:schema https://yazi-rs.github.io/schemas/theme.json
+
+[mgr]
+cwd            = { fg = "#9E958A", italic = true }
+find_keyword   = { fg = "#F2EDE4", bold = true, underline = true }
+find_position  = { fg = "#9E958A", italic = true }
+symlink_target = { fg = "#9E958A", italic = true }
+
+marker_copied   = { fg = "#9E958A" }
+marker_cut      = { fg = "#81786D" }
+marker_marked   = { fg = "#615950" }
+marker_selected = { fg = "#F2EDE4" }
+
+count_copied   = { fg = "#191612", bg = "#9E958A" }
+count_cut      = { fg = "#191612", bg = "#81786D" }
+count_selected = { fg = "#191612", bg = "#E0D9CD" }
+
+border_style = { fg = "#4D463E" }
+
+[tabs]
+active   = { fg = "#191612", bg = "#E0D9CD" }
+inactive = { fg = "#81786D" }
+
+[mode]
+normal_main = { fg = "#191612", bg = "#E0D9CD", bold = true }
+normal_alt  = { fg = "#9E958A", bg = "#25211C" }
+select_main = { fg = "#191612", bg = "#9E958A", bold = true }
+select_alt  = { fg = "#9E958A", bg = "#25211C" }
+unset_main  = { fg = "#191612", bg = "#9E958A", bold = true }
+unset_alt   = { fg = "#9E958A", bg = "#25211C" }
+
+# The hovered row is inverted, like a selection in the GTK theme.
+[indicator]
+parent  = { fg = "#F2EDE4", bg = "#3A342D" }
+current = { fg = "#191612", bg = "#E0D9CD" }
+preview = { underline = true }
+
+[status]
+overall    = { fg = "#9E958A" }
+perm_sep   = { fg = "#4D463E" }
+perm_type  = { fg = "#F2EDE4" }
+perm_read  = { fg = "#9E958A" }
+perm_write = { fg = "#9E958A" }
+perm_exec  = { fg = "#9E958A" }
+progress_label  = { fg = "#F2EDE4", bold = true }
+progress_normal = { fg = "#E0D9CD", bg = "#3A342D" }
+progress_error  = { fg = "#D0704F", bg = "#3A342D" }
+
+[which]
+mask            = { bg = "#25211C" }
+cand            = { fg = "#F2EDE4", bold = true }
+rest            = { fg = "#81786D" }
+desc            = { fg = "#9E958A", italic = true }
+separator_style = { fg = "#4D463E" }
+
+[confirm]
+border  = { fg = "#615950" }
+title   = { fg = "#F2EDE4", bold = true }
+btn_yes = { fg = "#191612", bg = "#E0D9CD" }
+btn_no  = { fg = "#9E958A" }
+
+[spot]
+border   = { fg = "#615950" }
+title    = { fg = "#F2EDE4", bold = true }
+tbl_col  = { fg = "#9E958A" }
+tbl_cell = { fg = "#191612", bg = "#E0D9CD" }
+
+[notify]
+title_info  = { fg = "#F2EDE4", bold = true }
+title_warn  = { fg = "#D9B46A", bold = true }
+title_error = { fg = "#D0704F", bold = true }
+
+[pick]
+border   = { fg = "#615950" }
+active   = { fg = "#191612", bg = "#E0D9CD" }
+inactive = { fg = "#F2EDE4" }
+
+[input]
+border   = { fg = "#615950" }
+title    = { fg = "#9E958A", italic = true }
+value    = { fg = "#F2EDE4" }
+selected = { fg = "#191612", bg = "#E0D9CD" }
+
+[cmp]
+border   = { fg = "#615950" }
+active   = { fg = "#191612", bg = "#E0D9CD" }
+inactive = { fg = "#F2EDE4" }
+
+[tasks]
+border  = { fg = "#615950" }
+title   = { fg = "#F2EDE4", bold = true }
+hovered = { fg = "#191612", bg = "#E0D9CD" }
+
+[help]
+border  = { fg = "#615950" }
+chord   = { fg = "#F2EDE4", bold = true }
+action  = { fg = "#9E958A" }
+hovered = { fg = "#191612", bg = "#E0D9CD" }
+
+# Folders bold, pictures italic like a plate caption, the rest plain ink.
+[filetype]
+rules = [
+	{ mime = "vfs/{absent,stale}", fg = "#81786D" },
+	{ url = "*", is = "orphan", fg = "#81786D", crossed = true },
+	{ url = "*", is = "dummy", fg = "#81786D", crossed = true },
+	{ url = "*/", is = "dummy", fg = "#81786D", crossed = true },
+	{ url = "*/", fg = "#F2EDE4", bold = true },
+	{ mime = "**/image/*", fg = "#F2EDE4", italic = true },
+	{ url = "*", is = "exec", fg = "#F2EDE4", underline = true },
+	{ url = "*", fg = "#F2EDE4" },
+]

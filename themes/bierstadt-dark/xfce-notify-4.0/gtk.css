@@ -1,0 +1,10 @@
+@import url("../../bierstadt/gtk-3.0/_palette.css");
+@define-color n_bg            @night_panel;
+@define-color n_border        @night_frame;
+@define-color n_border_strong @night_mid;
+@define-color n_border_hover  @night_dim;
+@define-color n_hover         @night_hover;
+@define-color n_fg            @night_text;
+@define-color n_fg_strong     #FFFCF6;
+@define-color n_shadow        alpha(black, 0.25);
+@import url("../../bierstadt/xfce-notify-4.0/_notify.css");

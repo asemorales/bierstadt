@@ -1,0 +1,67 @@
+; The Bierstadt bar: a book's running head across the top of the screen.
+;   left    the date and time, Contents (the applications menu) and the plates
+;           I-IV, one per workspace
+;   right   cpu, memory, disk, network, a volume slider and battery, in small
+;           caps; Fin. logs out
+; Started by `bierstadt-bar start`. Colours: _dark.scss and _light.scss.
+
+(deflisten workspaces :initial "[]" "bierstadt-bar workspaces")
+(deflisten volume     :initial '{"pct":0,"muted":false}' "bierstadt-bar volume")
+(defpoll   network    :interval "10s" "bierstadt-bar network")
+(defpoll   clock      :interval "10s" :initial '{"short":"","long":""}'
+  "date '+{\"short\":\"%a %d %b · %H:%M\",\"long\":\"%A %d %B %Y\"}'")
+
+(defwidget sep [] (label :class "sep" :text "·"))
+
+(defwidget left []
+  (box :class "left" :space-evenly false :halign "start" :spacing 24
+    (label :class "clock" :tooltip {clock.long} :text {clock.short})
+    (button :class "word" :onclick "xfdesktop --menu &" :onrightclick "xfce4-appfinder &"
+            :tooltip "Click for the applications, right-click to search" "Contents")
+    (box :class "plates" :space-evenly false :spacing 4
+      (for w in workspaces
+        (button :class {w.on ? "plate on" : "plate"}
+                :tooltip {w.painting}
+                :onclick "bierstadt-bar goto ${w.n}"
+          {w.name})))))
+
+(defwidget right []
+  (box :class "right" :space-evenly false :halign "end" :spacing 14
+    (button :class "word" :onclick "bierstadt-bar instruments" :tooltip "Processor, all cores. Click for btop"
+      "cpu ${round(EWW_CPU.avg, 0)}%")
+    (button :class "word" :onclick "bierstadt-bar instruments"
+      :tooltip "${round(EWW_RAM.used_mem / 1073741824, 1)} of ${round(EWW_RAM.total_mem / 1073741824, 1)} GB in use"
+      "mem ${round(EWW_RAM.used_mem_perc, 0)}%")
+    (label :class "word" :tooltip "${round(EWW_DISK['/'].free / 1073741824, 0)} GB free on /"
+      :text "disk ${round(EWW_DISK['/'].used_perc, 0)}%")
+    (sep)
+    (button :class "word" :onclick "bierstadt-bar wifi" :onrightclick "nm-connection-editor &"
+            :tooltip "Network. Click to join, right-click for saved connections" network)
+    (sep)
+    (eventbox :onscroll "bierstadt-bar volume-{}"
+      (box :class "volume" :space-evenly false :spacing 8
+        (button :class "word" :onclick "pactl set-sink-mute @DEFAULT_SINK@ toggle" :tooltip "Click to mute"
+          {volume.muted ? "vol muted" : "vol ${volume.pct}%"})
+        (scale :class {volume.muted ? "slider muted" : "slider"} :min 0 :max 101 :value {volume.pct}
+               :onchange "bierstadt-bar volume-set {}" :tooltip "Drag or scroll to change")))
+    (sep)
+    (label :class "word" :tooltip {EWW_BATTERY.BAT0.status}
+      :text "bat ${EWW_BATTERY.BAT0.capacity}%${EWW_BATTERY.BAT0.status == 'Charging' ? ' +' : ''}")
+    (button :class "word fin" :onclick "xfce4-session-logout --halt &" "Fin.")))
+
+(defwidget bar []
+  (centerbox :class "bar"
+    (left)
+    (box)
+    (right)))
+
+(defwindow bar
+  :monitor 0
+  :geometry (geometry :x "0" :y "0" :width "100%" :height "40px" :anchor "top center")
+  :stacking "fg"
+  :windowtype "dock"
+  :wm-ignore false
+  ; eww scales the bar for HiDPI but not the space it reserves, so this is
+  ; 40px times the 2x scale. Use "40px" on a 1x screen.
+  :reserve (struts :distance "80px" :side "top")
+  (bar))

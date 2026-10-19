@@ -1,0 +1,292 @@
+#!/usr/bin/env bash
+# bierstadt-mode: switch the desktop between the two Bierstadt rooms.
+#
+#   bierstadt-mode dark     the dark room, Romantic and dramatic landscapes (default)
+#   bierstadt-mode light    paper walls, Impressionist and plein-air paintings
+#   bierstadt-mode toggle   switch to the other room
+#   bierstadt-mode status   print the current room
+#   bierstadt-mode data     reread the paintings and recut them for the screen
+#
+# Changes the GTK theme, xfwm4 theme, icons, cursor, panel (through the GTK theme),
+# notifications, terminal colours (Xfce Terminal and Kitty), wallpapers,
+# the caption and the eww bar together. Yazi follows Kitty on its next start,
+# and Firefox's new tab painting on its next start.
+# Which paintings hang where: ~/.config/bierstadt/wall.yml
+
+set -euo pipefail
+
+WALL="$HOME/.config/bierstadt/wall.yml"
+PICTURES="$HOME/Pictures/bierstadt"
+DATA_DIR="$HOME/.local/share/bierstadt"
+STATE_DIR="$HOME/.local/state/bierstadt"
+TSV="$DATA_DIR/paintings.tsv"
+TERMINALRC="$HOME/.config/xfce4/terminal/terminalrc"
+KITTY_DIR="$HOME/.config/kitty"
+FIREFOX_DIR="$HOME/.mozilla/firefox"
+REPO="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)"   # this script is a link into the repo
+WORKSPACES=4
+CURSOR_SIZE=48      # 24px at the 2x scale
+DEFAULT_MODE=dark
+
+# Terminal palettes, checked for at least 4.5:1 against their background.
+# The chrome has no colour, but the ANSI slots keep muted hues so output stays readable.
+LIGHT_TERM=(
+  ColorBackground=#F2ECDF
+  ColorForeground=#231A15
+  ColorCursor=#231A15
+  ColorCursorForeground=#F2ECDF
+  ColorCursorUseDefault=FALSE
+  ColorSelection=#F2ECDF
+  ColorSelectionBackground=#231A15
+  ColorSelectionUseDefault=FALSE
+  ColorBold=#231A15
+  ColorBoldUseDefault=TRUE
+  TabActivityColor=#231A15
+  "ColorPalette=#231A15;#B04A2A;#5B6E3A;#85651B;#2F5470;#7D4B63;#3E6F6A;#DDD4C1;#6E6965;#AA4A2B;#5A6E38;#82641A;#3A6588;#8E5672;#3F716C;#FFFFFF"
+)
+# gwern.net's dark page (#191612) with warm, creamy light greys for text.
+DARK_TERM=(
+  ColorBackground=#191612
+  ColorForeground=#EFE6D6
+  ColorCursor=#E3D8C4
+  ColorCursorForeground=#191612
+  ColorCursorUseDefault=FALSE
+  ColorSelection=#191612
+  ColorSelectionBackground=#E3D8C4
+  ColorSelectionUseDefault=FALSE
+  ColorBold=#FBF4E8
+  ColorBoldUseDefault=FALSE
+  TabActivityColor=#FBF4E8
+  "ColorPalette=#100D0A;#D0704F;#9DB07A;#D9B46A;#7FA3C2;#B98AA2;#86B5AE;#E3D8C4;#978A79;#E08A6B;#B3C496;#E6C88A;#9DBAD3;#CDA4B8;#A3C9C3;#EFE6D6"
+)
+
+usage() { sed -n '2,13p' "$0" | sed 's/^# \{0,1\}//'; }
+
+current_mode() { cat "$STATE_DIR/mode" 2>/dev/null || echo "$DEFAULT_MODE"; }
+
+screen_size() {
+  xrandr --current | awk '/ connected primary/ { for (i = 1; i <= NF; i++) if ($i ~ /^[0-9]+x[0-9]+\+/) { split($i, a, "+"); print a[1]; exit } }'
+}
+
+# Read the paintings in wall.yml, cut each painting to fill the
+# screen, and write paintings.tsv and one file per room.
+build_data() {
+  mkdir -p "$DATA_DIR/screen"
+  python3 -I - "$WALL" "$PICTURES" "$DATA_DIR" "$(screen_size)" <<'PY'
+import glob, os, subprocess, sys, yaml
+wall_path, pictures, out, size = sys.argv[1:]
+sw, sh = (int(x) for x in (size or "3840x2160").split("x"))
+wall = yaml.safe_load(open(wall_path, encoding="utf-8"))
+paintings = wall["paintings"]
+clean = lambda s: " ".join(str(s).split())
+
+wanted = {k for room in wall["rooms"].values() for k in room}
+login = wall.get("login")             # boot menu and login screen, outside the rooms
+if login:
+    wanted.add(login)
+life = wall.get("life") or {}         # caption overrides; "" shows the label alone
+rows = []
+for key in sorted(wanted):
+    p = paintings[key]
+    src = sorted(glob.glob(os.path.join(pictures, p["image"] + ".*")))
+    if not src:
+        sys.exit(f"no file for {key} in {pictures}; download it from {p['source']}")
+    w, h = (int(x) for x in subprocess.check_output(
+        ["identify", "-format", "%w %h", src[0] + "[0]"]).split())
+    # Scale to cover the screen, then cut the overflow, top share from wall.yml.
+    scale = max(sw / w, sh / h)
+    cw, ch = round(sw / scale), round(sh / scale)
+    top = float(wall.get("crop_top", {}).get(key, 0.5))
+    x, y = (w - cw) // 2, round((h - ch) * top)
+    dest = os.path.join(out, "screen", f"{key}-{sw}x{sh}.jpg")
+    if not os.path.exists(dest) or os.path.getmtime(dest) < max(os.path.getmtime(src[0]), os.path.getmtime(wall_path)):
+        subprocess.run(["convert", src[0] + "[0]", "-crop", f"{cw}x{ch}+{x}+{y}", "+repage",
+                        "-filter", "Lanczos", "-resize", f"{sw}x{sh}!", "-quality", "92", dest], check=True)
+    if scale > 1.4:
+        print(f"note: {key} is upscaled {scale:.2f}x to fill the screen", file=sys.stderr)
+    label = " · ".join(clean(p[k]) for k in ("artist", "title", "year")).upper()
+    rows.append("\t".join([key, dest, clean(p["artist"]), clean(p["title"]),
+                           clean(p["year"]), clean(life.get(key, p.get("life", ""))), label]))
+open(os.path.join(out, "paintings.tsv"), "w", encoding="utf-8").write("\n".join(rows) + "\n")
+for room, keys in wall["rooms"].items():
+    open(os.path.join(out, f"room-{room}"), "w").write("\n".join(keys) + "\n")
+open(os.path.join(out, "login"), "w").write((login or "") + "\n")
+print(f"{len(rows)} paintings cut for {sw}x{sh} in {out}/screen")
+PY
+}
+
+set_prop() {  # channel property type value
+  xfconf-query -c "$1" -p "$2" -n -t "$3" -s "$4" 2>/dev/null \
+    || xfconf-query -c "$1" -p "$2" -s "$4"
+}
+
+set_rgba() {  # channel property r g b
+  xfconf-query -c "$1" -p "$2" -r 2>/dev/null || true
+  xfconf-query -c "$1" -p "$2" -n \
+    -t double -s "$3" -t double -s "$4" -t double -s "$5" -t double -s 1
+}
+
+painting_file() { awk -F'\t' -v k="$1" '$1 == k { print $2 }' "$TSV"; }
+
+set_wallpapers() {  # fill-r fill-g fill-b key...
+  local r=$1 g=$2 b=$3; shift 3
+  local set=("$@") monitors ws key file base
+  mapfile -t monitors < <(xrandr --listmonitors | awk 'NR > 1 { print $NF }')
+  set_prop xfce4-desktop /backdrop/single-workspace-mode bool false
+  for mon in "${monitors[@]}"; do
+    for ((ws = 0; ws < WORKSPACES; ws++)); do
+      key=${set[ws % ${#set[@]}]}
+      file=$(painting_file "$key")
+      [ -n "$file" ] || { echo "missing painting: $key" >&2; continue; }
+      base="/backdrop/screen0/monitor$mon/workspace$ws"
+      set_prop xfce4-desktop "$base/last-image" string "$file"
+      set_prop xfce4-desktop "$base/image-style" int 5       # zoomed: the file is already cut to fit
+      set_prop xfce4-desktop "$base/color-style" int 0
+      set_prop xfce4-desktop "$base/backdrop-cycle-enable" bool false
+      set_rgba xfce4-desktop "$base/rgba1" "$r" "$g" "$b"
+    done
+  done
+}
+
+set_panel_load_colors() {  # r g b, for the system load plugin's bars
+  local id prop
+  for id in $(xfconf-query -c xfce4-panel -lv | awk '$2 == "systemload" { sub("/plugins/plugin-", "", $1); print $1 }'); do
+    for prop in cpu memory swap network; do
+      set_rgba xfce4-panel "/plugins/plugin-$id/$prop/color" "$1" "$2" "$3"
+    done
+  done
+}
+
+set_terminal() {
+  # One write, so xfce4-terminal reloads once with every colour in place.
+  [ -e "$TERMINALRC" ] || return 0
+  local target tmp
+  target=$(readlink -f "$TERMINALRC")    # terminalrc is a link into ~/code/dotfiles
+  tmp=$(mktemp "$target.XXXXXX")
+  python3 -I - "$target" "$@" > "$tmp" <<'PY'
+import sys
+path, pairs = sys.argv[1], dict(kv.split("=", 1) for kv in sys.argv[2:])
+lines = open(path, encoding="utf-8").read().splitlines()
+seen = set()
+for i, line in enumerate(lines):
+    key = line.split("=", 1)[0]
+    if key in pairs:
+        lines[i] = f"{key}={pairs[key]}"
+        seen.add(key)
+at = lines.index("[Configuration]") + 1 if "[Configuration]" in lines else len(lines)
+lines[at:at] = [f"{k}={v}" for k, v in pairs.items() if k not in seen]
+print("\n".join(lines))
+PY
+  chmod --reference="$target" "$tmp"
+  mv "$tmp" "$target"
+}
+
+set_cursor() {
+  # xsettings covers GTK apps; ~/.icons/default covers the desktop and Qt.
+  set_prop xsettings /Gtk/CursorThemeName string "$1"
+  set_prop xsettings /Gtk/CursorThemeSize int "$CURSOR_SIZE"
+  mkdir -p "$HOME/.icons/default"
+  printf '[Icon Theme]\nInherits=%s\n' "$1" > "$HOME/.icons/default/index.theme"
+  # Kitty and portal apps read the cursor from gsettings, not xsettings.
+  command -v gsettings >/dev/null || return 0
+  gsettings set org.gnome.desktop.interface cursor-theme "$1"
+  gsettings set org.gnome.desktop.interface cursor-size "$CURSOR_SIZE"
+}
+
+set_color_scheme() {  # scheme theme
+  # The desktop-wide light/dark preference. Browsers, Electron apps and
+  # libadwaita read it through xdg-desktop-portal; "default" reads as light.
+  command -v gsettings >/dev/null || return 0
+  gsettings set org.gnome.desktop.interface color-scheme "$1"
+  gsettings set org.gnome.desktop.interface gtk-theme "$2"
+}
+
+set_kitty() {
+  # room.conf is a local link, so the repo copy stays the same in both rooms.
+  [ -e "$KITTY_DIR/kitty.conf" ] || return 0
+  ln -sfn "bierstadt-$1.conf" "$KITTY_DIR/room.conf"
+  pkill -USR1 -x kitty 2>/dev/null || true     # open windows reread their config
+}
+
+set_firefox() {  # key page text dim
+  # The new tab page cannot read files beside a symlinked sheet, so write
+  # userContent.css into the profile with the painting inlined.
+  local profile template="$REPO/firefox/chrome/userContent.css"
+  profile=$(awk -F= '/^\[Install/ { s = 1; next } /^\[/ { s = 0 } s && $1 == "Default" { print $2; exit }' \
+    "$FIREFOX_DIR/profiles.ini" 2>/dev/null) || true
+  [ -n "$profile" ] && [ -e "$template" ] || return 0
+  mkdir -p "$FIREFOX_DIR/$profile/chrome"
+  python3 -I - "$template" "$FIREFOX_DIR/$profile/chrome/userContent.css" "$TSV" "$@" <<'PY'
+import base64, subprocess, sys
+template, out, tsv, key, page, text, dim = sys.argv[1:]
+row = next(l.rstrip("\n").split("\t") for l in open(tsv, encoding="utf-8") if l.startswith(key + "\t"))
+# 1920 wide is sharp enough behind a search box and keeps the sheet small.
+jpg = subprocess.check_output(["convert", row[1], "-resize", "1920x>", "-quality", "82", "jpg:-"])
+label = row[6].replace("\\", "\\\\").replace('"', '\\"')
+css = open(template, encoding="utf-8").read()
+for k, v in {"@PAINTING@": "data:image/jpeg;base64," + base64.b64encode(jpg).decode(),
+             "@LABEL@": label, "@PAGE@": page, "@TEXT@": text, "@DIM@": dim}.items():
+    css = css.replace(k, v)
+open(out, "w", encoding="utf-8").write(css)
+PY
+}
+
+apply() {
+  local mode=$1 theme scheme cursor fill set term load
+  if [ "$mode" = dark ]; then
+    theme=bierstadt-dark; scheme=prefer-dark; term=("${DARK_TERM[@]}")
+    cursor=bierstadt-cursors-dark                # a pale pointer on the dark room
+    fill=(0.098039 0.086275 0.070588)          # #191612
+    load=(0.620 0.584 0.541)                   # #9E958A
+  else
+    theme=bierstadt; scheme=prefer-light; term=("${LIGHT_TERM[@]}")
+    cursor=bierstadt-cursors
+    fill=(0.949020 0.925490 0.874510)          # paper #F2ECDF
+    load=(0.420 0.396 0.376)                   # ink at 62% on paper
+  fi
+
+  if [ ! -s "$TSV" ] || [ "$WALL" -nt "$TSV" ]; then build_data >/dev/null; fi
+  mapfile -t set < "$DATA_DIR/room-$mode"
+
+  set_prop xsettings /Net/ThemeName string "$theme"
+  set_prop xsettings /Net/IconThemeName string "$theme"
+  set_prop xfwm4 /general/theme string "$theme"
+  set_cursor "$cursor"
+  set_color_scheme "$scheme" "$theme"
+  set_prop xfce4-notifyd /theme string "$theme"
+  set_prop xfce4-panel /panels/dark-mode bool false
+  set_panel_load_colors "${load[@]}"
+  set_wallpapers "${fill[@]}" "${set[@]}"
+  set_terminal "${term[@]}"
+  set_kitty "$mode"
+  # Firefox's new tab gets a different painting from the room on every run.
+  local tab last
+  last=$(cat "$STATE_DIR/firefox" 2>/dev/null || true)
+  tab=$(printf '%s\n' "${set[@]}" | grep -vxF -- "$last" | shuf -n 1 || true)
+  tab=${tab:-${set[0]}}
+  if [ "$mode" = dark ]; then
+    set_firefox "$tab" '#191612' '#F2EDE4' '#9E958A'
+  else
+    set_firefox "$tab" '#F2ECDF' '#231A15' '#6E6965'
+  fi
+  mkdir -p "$STATE_DIR"
+  echo "$tab" > "$STATE_DIR/firefox"
+
+  mkdir -p "$STATE_DIR"
+  echo "$mode" > "$STATE_DIR/mode"
+  printf '%s\n' "${set[@]}" > "$STATE_DIR/set"
+
+  command -v bierstadt-caption >/dev/null && bierstadt-caption restart >/dev/null 2>&1 || true
+  command -v bierstadt-bar >/dev/null && bierstadt-bar room >/dev/null 2>&1 || true
+  echo "Bierstadt mode: $mode"
+}
+
+case "${1:-}" in
+  light|dark) apply "$1" ;;
+  toggle)     [ "$(current_mode)" = light ] && apply dark || apply light ;;
+  status)     current_mode ;;
+  data)       build_data ;;
+  "")         apply "$(current_mode)" ;;
+  -h|--help)  usage ;;
+  *)          usage; exit 2 ;;
+esac

@@ -1,0 +1,1075 @@
+/* Bierstadt widgets.
+ * Shared by bierstadt and bierstadt-dark. Uses only the g_* roles from _roles.css,
+ * never raw hex, so each variant only has to change its roles.
+ *
+ * Style:  gwern.net's colours (greys, no accent, inverted selection) and its rules,
+ *         with 8px/12px rounded corners and soft shadows.
+ * Type:   Inter for the interface, Source Serif 4 (small caps) for titles
+ *         and headings, IBM Plex Mono for labels and code.
+ * Motion: 250ms on the Bierstadt curve. */
+
+/* ------------------------------------------------------------------ base */
+
+* {
+  outline-color: @g_accent;
+  outline-style: solid;
+  outline-width: 2px;
+  outline-offset: 1px;
+  -gtk-outline-radius: 7px;
+  -gtk-secondary-caret-color: @g_accent;
+  caret-color: @g_fg_strong;
+}
+
+window,
+.background,
+dialog,
+messagedialog .dialog-action-area {
+  background-color: @g_bg;
+  color: @g_fg;
+}
+
+label { color: inherit; }
+label:disabled,
+*:disabled { color: @g_fg_disabled; }
+.dim-label,
+label.dim-label,
+label.separator { color: @g_fg_dim; opacity: 1; }
+
+.view,
+textview text,
+iconview,
+treeview.view,
+.content-view {
+  background-color: @g_view;
+  color: @g_fg;
+}
+
+/* Selection: inverted, ink and paper swapped, as on gwern.net. */
+*:selected,
+*:selected:focus,
+.view:selected,
+.view:selected:focus,
+treeview.view:selected,
+treeview.view:selected:focus,
+iconview:selected,
+iconview:selected:focus,
+flowbox flowboxchild:selected,
+row:selected,
+row:selected label {
+  background-color: @g_item_sel_bg;
+  color: @g_item_sel_fg;
+}
+calendar:selected,
+selection,
+text selection,
+entry selection,
+label selection {
+  background-color: @g_selected_bg;
+  color: @g_selected_fg;
+}
+
+treeview.view:hover { background-color: @g_hover; }
+treeview.view.separator { color: @g_border; }
+treeview.view:drop(active) { border-color: @g_accent; }
+treeview.view header button,
+treeview.view header button:hover,
+treeview.view header button:active {
+  background: @g_bg;
+  color: @g_fg_dim;
+  border-color: @g_border;
+  box-shadow: none;
+  font-family: "Source Serif 4";
+  font-weight: 600;
+  font-size: 10pt;
+  font-feature-settings: "smcp, c2sc";
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid @g_rule;
+}
+treeview.view header button:hover { color: @g_fg; }
+
+.rubberband,
+rubberband {
+  background-color: alpha(@g_fg_strong, 0.06);
+  border: 1px solid @g_border_strong;
+}
+
+separator {
+  background: @g_border;
+  min-width: 1px;
+  min-height: 1px;
+}
+
+link,
+*:link,
+button.link,
+button.link:link,
+button.link:link label { color: @g_fg_strong; }
+*:link:hover { color: @g_accent; }
+*:visited { color: @g_fg_dim; }
+
+/* --------------------------------------------------------------- buttons */
+
+/* Default buttons follow the site's .btn-secondary:
+   transparent, inset 1px ring at 20% ink, 5% ink fill and 40% ring on hover. */
+button,
+button.text-button,
+button.image-button,
+modelbutton.flat:hover,
+.linked > button,
+combobox button,
+spinbutton button,
+filechooser .path-bar button {
+  min-height: 22px;
+  padding: 8px 18px;
+  border-radius: 8px;
+  border: none;
+  background-image: none;
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px @g_border_strong, 0 1px 2px @g_shadow;
+  text-shadow: none;
+  -gtk-icon-shadow: none;
+  color: @g_fg_strong;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+button.image-button { padding: 8px 10px; }
+
+button:hover,
+combobox button:hover {
+  background-color: @g_hover;
+  box-shadow: inset 0 0 0 1px @g_border_hover, 0 2px 6px @g_shadow;
+  color: @g_fg_strong;
+}
+
+button:active,
+button:checked,
+combobox button:active {
+  background-color: @g_active;
+  box-shadow: inset 0 0 0 1px @g_border_hover;
+  color: @g_fg_strong;
+}
+
+button:disabled {
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px @g_border;
+  color: @g_fg_disabled;
+}
+button:disabled label { color: @g_fg_disabled; box-shadow: none; }
+
+/* Primary: ink fill with paper text, 80% ink on hover. */
+button.suggested-action,
+button.default,
+.dialog-action-area button.suggested-action {
+  background-color: @g_primary_bg;
+  color: @g_primary_fg;
+  box-shadow: 0 1px 3px @g_shadow_strong;
+}
+button.suggested-action label,
+button.default label { color: @g_primary_fg; }
+button.suggested-action:hover,
+button.default:hover { background-color: @g_primary_hover; box-shadow: 0 2px 8px @g_shadow_strong; }
+button.suggested-action:active,
+button.suggested-action:checked { background-color: @g_primary_hover; }
+button.suggested-action:disabled { background-color: @g_border; color: @g_fg_disabled; }
+
+button.destructive-action {
+  background-color: transparent;
+  color: @g_accent;
+  box-shadow: inset 0 0 0 1px alpha(@g_accent, 0.5);
+}
+button.destructive-action label { color: @g_accent; }
+button.destructive-action:hover { background-color: alpha(@g_accent, 0.08); box-shadow: inset 0 0 0 1px @g_accent; }
+
+/* Quiet buttons inside toolbars, headers, sidebars, the panel */
+button.flat,
+.toolbar button,
+toolbar button,
+headerbar button,
+.titlebar button,
+.path-bar button,
+.sidebar button,
+placessidebar button,
+popover button.flat,
+.inline-toolbar button,
+stackswitcher button,
+notebook > header > tabs > tab button {
+  background-color: transparent;
+  box-shadow: none;
+}
+button.flat:hover,
+toolbar button:hover,
+headerbar button:hover,
+.titlebar button:hover,
+.path-bar button:hover,
+notebook > header > tabs > tab button:hover {
+  background-color: @g_hover;
+  box-shadow: none;
+}
+button.flat:checked,
+toolbar button:checked,
+headerbar button:checked,
+.titlebar button:checked,
+.path-bar button:checked {
+  background-color: @g_active;
+  box-shadow: none;
+}
+
+.linked > button { border-radius: 0; }
+.linked > button:first-child { border-top-left-radius: 8px; border-bottom-left-radius: 8px; }
+.linked > button:last-child  { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
+.linked > button:only-child  { border-radius: 8px; }
+
+/* ---------------------------------------------------------------- entries */
+
+entry,
+spinbutton:not(.vertical),
+spinbutton.vertical > entry,
+textview.entry,
+searchbar entry {
+  min-height: 22px;
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background-image: none;
+  background-color: @g_view;
+  box-shadow: inset 0 0 0 1px @g_border_strong;
+  color: @g_fg_strong;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+spinbutton:not(.vertical) { padding: 0; }
+spinbutton:not(.vertical) entry { box-shadow: none; background: transparent; }
+spinbutton button { box-shadow: none; border-radius: 0; }
+entry:hover { box-shadow: inset 0 0 0 1px @g_border_hover; }
+entry:focus,
+spinbutton:focus-within {
+  box-shadow: inset 0 0 0 2px @g_accent;
+}
+entry:disabled { background-color: @g_bg; color: @g_fg_disabled; box-shadow: inset 0 0 0 1px @g_border; }
+entry image { color: @g_fg_dim; }
+entry placeholder,
+entry .placeholder { color: @g_fg_disabled; }
+entry progress { border-bottom: 2px solid @g_fg_strong; background: none; }
+entry.error { color: @g_accent; box-shadow: inset 0 0 0 1px @g_accent; }
+
+combobox button.combo { padding: 8px 12px; }
+combobox arrow,
+button arrow { color: @g_fg_dim; }
+
+/* ---------------------------------------------- header bars and titlebars */
+
+headerbar,
+.titlebar:not(headerbar),
+.titlebar.default-decoration {
+  min-height: 46px;
+  padding: 0 14px;
+  background-image: none;
+  background-color: @g_header;
+  border: none;
+  border-bottom: 1px solid @g_border;
+  box-shadow: none;
+  color: @g_fg;
+}
+headerbar:backdrop,
+.titlebar:backdrop { background-color: @g_header_back; color: @g_fg_dim; }
+
+headerbar .title,
+.titlebar .title,
+headerbar label.title {
+  font-family: "Source Serif 4";
+  font-weight: 600;
+  font-size: 12pt;
+  font-feature-settings: "smcp";
+  color: @g_fg_strong;
+}
+headerbar .subtitle { color: @g_fg_dim; }
+
+/* Client-side decorated windows: 8px top corners, soft shadow */
+decoration {
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px @g_border, 0 2px 4px @g_shadow, 0 12px 32px @g_shadow_strong;
+}
+decoration:backdrop { box-shadow: 0 0 0 1px @g_border, 0 6px 18px @g_shadow; }
+.solid-csd decoration,
+.maximized decoration,
+.tiled decoration { border-radius: 0; }
+.csd.popup decoration,
+menu decoration { border-radius: 12px; box-shadow: 0 0 0 1px @g_border, 0 8px 24px @g_shadow_strong; }
+
+/* Window-control buttons drawn by GTK (CSD windows) */
+headerbar button.titlebutton,
+.titlebar button.titlebutton {
+  min-width: 20px;
+  min-height: 20px;
+  padding: 4px;
+  border-radius: 999px;
+  color: @g_fg_dim;
+  box-shadow: none;
+}
+headerbar button.titlebutton:hover { background-color: @g_hover; color: @g_fg_strong; }
+
+/* --------------------------------------------------------- menus, popovers */
+
+menubar,
+.menubar {
+  background-color: @g_bg;
+  box-shadow: inset 0 -1px @g_border;
+  padding: 0 8px;
+}
+menubar > menuitem,
+.menubar > menuitem { padding: 8px 12px; color: @g_fg; border-radius: 0; }
+menubar > menuitem:hover,
+.menubar > menuitem:hover {
+  background-color: @g_hover;
+  box-shadow: inset 0 -2px @g_fg_strong;
+  color: @g_fg_strong;
+}
+
+/* Every menu-like surface shares one rhythm, taken from the panel's
+   applications menu: 8px x 2px inside the card, 8px x 6px per item, 8px corners
+   on items, 12px on the card. Context menus, combo dropdowns, popovers,
+   panel menus and Whisker all use these values. */
+menu,
+.menu,
+.context-menu,
+.csd menu,
+.csd .menu,
+.xfce4-panel menu,
+.xfce4-panel .menu,
+combobox window menu,
+popover,
+popover.background {
+  margin: 0;
+  padding: 8px 2px;
+  background-color: @g_popover;
+  border: 1px solid @g_frame;
+  border-radius: 12px;
+  color: @g_fg;
+}
+.csd menu,
+.csd .menu { border: none; }
+popover,
+popover.background { box-shadow: 0 8px 24px @g_shadow_strong; }
+
+menu menuitem,
+.menu menuitem,
+.context-menu menuitem,
+combobox window menu menuitem,
+popover modelbutton,
+popover button.flat.model,
+#whiskermenu-window treeview.view,
+#whiskermenu-window button.flat {
+  min-height: 20px;
+  margin: 0;
+  padding: 8px 6px;
+  border-radius: 8px;
+  color: @g_fg;
+  text-shadow: none;
+  transition: background-color 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+menu menuitem:hover,
+.menu menuitem:hover,
+popover modelbutton:hover {
+  background-color: @g_selected_bg;
+  color: @g_selected_fg;
+}
+/* Labels take their colour from their own item. A submenu is styled as if it
+   sat inside the item that opened it, so "labels inside a hovered item"
+   would also catch every label in the open submenu. */
+menu menuitem label,
+.menu menuitem label,
+.xfce4-panel menu menuitem label,
+.xfce4-panel .menu menuitem label { color: inherit; }
+menu menuitem:disabled,
+menu menuitem:disabled label { color: @g_fg_disabled; }
+menu menuitem accelerator,
+.menu menuitem accelerator { margin-left: 16px; color: alpha(currentColor, 0.6); font-family: "IBM Plex Mono"; font-size: 9pt; }
+menu menuitem arrow { margin-left: 8px; min-width: 16px; color: @g_fg_dim; }
+menu menuitem check,
+menu menuitem radio { margin: 0 8px 0 0; }
+menu menuitem image { margin-right: 8px; }
+menu separator,
+.menu separator,
+popover separator { margin: 8px 6px; background: @g_border; }
+menu check,
+menu radio { color: @g_fg; }
+menu > arrow { background: @g_popover; border: none; color: @g_fg_dim; }
+
+/* --------------------------------------------------------------- tooltips */
+
+tooltip,
+tooltip.background,
+.tooltip {
+  padding: 8px 12px;
+  border-radius: 8px;
+  border: none;
+  background-color: @g_tooltip_bg;
+  box-shadow: none;
+  text-shadow: none;
+}
+tooltip *,
+tooltip label { color: @g_tooltip_fg; text-shadow: none; }
+
+/* ------------------------------------------------------------- scrollbars */
+
+scrollbar {
+  background-color: transparent;
+  border: none;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+scrollbar trough { background-color: transparent; border-radius: 999px; }
+scrollbar:hover trough { background-color: @g_trough; }
+scrollbar slider {
+  min-width: 6px;
+  min-height: 6px;
+  margin: 2px;
+  border: none;
+  border-radius: 999px;
+  background-color: @g_slider;
+}
+scrollbar slider:hover { background-color: @g_slider_hover; }
+scrollbar slider:active { background-color: @g_fg_dim; }
+scrollbar.overlay-indicator:not(.dragging):not(.hovering) slider {
+  min-width: 3px;
+  min-height: 3px;
+  margin: 3px;
+  background-color: @g_slider;
+  border: none;
+}
+scrollbar button { background: none; box-shadow: none; color: @g_fg_dim; }
+scrolledwindow undershoot,
+scrolledwindow overshoot { background: none; box-shadow: none; }
+scrolledwindow junction { background: @g_bg; }
+
+/* ----------------------------------------------------------- notebook tabs */
+
+notebook {
+  background-color: @g_bg;
+}
+notebook > header {
+  background-color: @g_bg;
+  border: none;
+  box-shadow: none;
+  border-bottom: 1px dotted @g_rule;
+  padding: 8px 16px 0;
+}
+notebook > header.bottom { box-shadow: inset 0 1px @g_border; }
+notebook > header > tabs > tab {
+  min-height: 26px;
+  margin: 0;
+  padding: 14px 24px 12px;
+  border: none;
+  background: transparent;
+  box-shadow: none;
+  color: @g_fg_dim;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+notebook > header > tabs > tab label { color: inherit; }
+notebook > header > tabs > tab:hover { color: @g_fg; box-shadow: inset 0 -2px @g_border_strong; }
+notebook > header > tabs > tab:checked {
+  color: @g_fg_strong;
+  background: transparent;
+  box-shadow: inset 0 -2px @g_fg_strong;
+}
+notebook > header.bottom > tabs > tab:checked { box-shadow: inset 0 2px @g_fg_strong; }
+notebook > header.left  > tabs > tab:checked { box-shadow: inset -2px 0 @g_fg_strong; }
+notebook > header.right > tabs > tab:checked { box-shadow: inset 2px 0 @g_fg_strong; }
+notebook > stack:not(:only-child) { background-color: @g_view; }
+notebook > header > tabs > tab button.flat { padding: 2px; margin-left: 8px; min-width: 18px; min-height: 18px; border-radius: 999px; box-shadow: none; }
+
+stackswitcher button:checked,
+stackswitcher button.text-button:checked {
+  background-color: @g_selected_bg;
+  color: @g_selected_fg;
+  box-shadow: none;
+}
+
+/* --------------------------------------------------------- switch, check */
+
+switch {
+  min-width: 30px;
+  min-height: 16px;
+  border: none;
+  border-radius: 999px;
+  padding: 0;
+  background-color: @g_border_strong;
+  background-image: none;
+  box-shadow: none;
+  color: transparent;
+  font-size: 0;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+switch:checked { background-color: @g_accent; }
+switch:disabled { background-color: @g_border; }
+switch slider,
+switch:hover slider,
+switch:checked slider,
+switch:disabled slider,
+switch:backdrop slider,
+switch:checked:backdrop slider {
+  min-width: 12px;
+  min-height: 12px;
+  margin: 2px;
+  border: none;
+  border-radius: 999px;
+  background-image: none;
+  background-color: @g_knob;
+  box-shadow: none;
+}
+/* GTK sizes the switch from its on/off icons; take them out of the measure */
+switch image {
+  color: transparent;
+  -gtk-icon-source: none;
+  min-width: 0;
+  min-height: 0;
+  margin: -8px;
+  padding: 0;
+  opacity: 0;
+}
+
+check,
+radio {
+  min-width: 14px;
+  min-height: 14px;
+  margin: 0 8px 0 0;
+  border: none;
+  background-image: none;
+  background-color: transparent;
+  box-shadow: inset 0 0 0 1px @g_border_hover;
+  color: @g_primary_fg;
+  -gtk-icon-shadow: none;
+  transition: all 200ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+check { border-radius: 4px; }
+radio { border-radius: 999px; }
+check:hover,
+radio:hover { background-color: @g_hover; }
+check:checked,
+check:indeterminate,
+radio:checked,
+radio:indeterminate {
+  background-color: @g_primary_bg;
+  box-shadow: none;
+  color: @g_primary_fg;
+}
+check:disabled,
+radio:disabled { box-shadow: inset 0 0 0 1px @g_border; background-color: transparent; }
+check:checked:disabled,
+radio:checked:disabled { background-color: @g_border; color: @g_fg_disabled; }
+menu check, menu radio,
+treeview check, treeview radio { margin: 0; }
+
+/* ---------------------------------------------- scales and progress bars */
+
+scale trough,
+progressbar trough,
+levelbar trough {
+  min-height: 4px;
+  min-width: 4px;
+  border: none;
+  border-radius: 999px;
+  background-color: @g_trough;
+  box-shadow: none;
+}
+scale highlight,
+progressbar progress,
+levelbar block.filled {
+  border: none;
+  border-radius: 999px;
+  background-image: none;
+  background-color: @g_fg_strong;
+  box-shadow: none;
+}
+scale slider {
+  min-width: 16px;
+  min-height: 16px;
+  margin: -6px;
+  border: none;
+  border-radius: 999px;
+  background-image: none;
+  background-color: @g_knob;
+  box-shadow: inset 0 0 0 1px @g_border_hover, 0 1px 2px @g_shadow;
+}
+scale slider:hover { box-shadow: inset 0 0 0 1px @g_fg_strong, 0 1px 2px @g_shadow; }
+levelbar block.empty { background-color: @g_trough; }
+levelbar block.low  { background-color: @g_fg_dim; }
+levelbar block.high,
+levelbar block.full { background-color: @g_fg_strong; }
+
+/* --------------------------------------------------------------- sidebars */
+
+.sidebar,
+placessidebar,
+placessidebar list,
+stacksidebar,
+stacksidebar list,
+.navigation-sidebar,
+paned > .sidebar {
+  background-color: @g_bg_alt;
+  border: none;
+  color: @g_fg;
+}
+.sidebar:not(separator):dir(ltr),
+placessidebar:dir(ltr) { border-right: 1px solid @g_border; }
+placessidebar row,
+stacksidebar row,
+.sidebar row {
+  min-height: 32px;
+  margin: 2px 6px;
+  padding: 0 8px;
+  border-radius: 8px;
+}
+placessidebar row:hover,
+.sidebar row:hover { background-color: @g_hover; }
+placessidebar row:selected,
+.sidebar row:selected,
+stacksidebar row:selected { background-color: @g_item_sel_bg; color: @g_item_sel_fg; }
+placessidebar row image,
+.sidebar image { color: @g_fg_dim; }
+placessidebar > viewport.frame { border: none; }
+
+paned > separator { background-color: @g_border; background-image: none; min-width: 1px; min-height: 1px; }
+
+/* Thunar: sidebar tree and the location bar */
+.thunar .sidebar,
+.thunar placessidebar,
+.thunar .shortcuts-pane,
+.thunar treeview.view.sidebar,
+window.thunar paned > scrolledwindow:first-child treeview.view {
+  background-color: @g_bg_alt;
+}
+/* Selected and hovered rows. Written out for Thunar's view so nothing more
+   specific can paint over the selection. */
+.thunar .standard-view treeview.view:hover,
+.standard-view treeview.view:hover { background-color: @g_hover; }
+.thunar .standard-view treeview.view:selected,
+.thunar .standard-view treeview.view:selected:focus,
+.standard-view treeview.view:selected,
+.standard-view treeview.view:selected:focus {
+  background-color: @g_item_sel_bg;
+  color: @g_item_sel_fg;
+}
+.thunar .standard-view iconview:selected,
+.standard-view iconview:selected { background-color: @g_item_sel_bg; color: @g_item_sel_fg; border-radius: 8px; }
+/* Roomier file rows, like an index with generous leading */
+.thunar .standard-view treeview.view,
+.standard-view treeview.view { padding: 10px 10px; }
+/* Margin around the whole list, like a mount around a print */
+.standard-view { padding: 14px 22px 10px; background-color: @g_view; }
+.standard-view treeview.view header button:first-child { border-top-left-radius: 8px; }
+.thunar .standard-view treeview.view header button { padding: 10px 12px; }
+.thunar toolbar { background-color: @g_bg; border-bottom: 1px solid @g_border; padding: 8px 12px; }
+.thunar .statusbar,
+.thunar statusbar { color: @g_fg_dim; font-family: "IBM Plex Mono"; font-size: 9pt; }
+.path-bar-button.toggle:checked { box-shadow: inset 0 -2px @g_fg_strong; }
+
+/* -------------------------------------------------------- lists and rows */
+
+list,
+listview { background-color: @g_view; color: @g_fg; }
+list row:hover,
+row.activatable:hover { background-color: @g_hover; }
+list row.activatable:active { background-color: @g_active; }
+list.content row:not(:last-child) { border-bottom: 1px solid @g_border; }
+list row { padding: 4px 8px; }
+treeview.view { padding: 4px 3px; }
+
+/* Framed groups read like mounted prints: rounded, with a soft shadow */
+frame > border,
+.frame {
+  border: 1px solid @g_border;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px @g_shadow;
+}
+scrolledwindow.frame,
+frame.view { border-color: @g_border; }
+list.frame,
+list.content { border-radius: 12px; }
+
+/* ------------------------------------------------------------- toolbars */
+
+toolbar,
+.toolbar,
+.inline-toolbar,
+searchbar,
+searchbar > revealer > box,
+actionbar,
+actionbar > revealer > box {
+  background-color: @g_bg;
+  background-image: none;
+  border-color: @g_border;
+  box-shadow: none;
+}
+statusbar { color: @g_fg_dim; padding: 4px 14px; }
+
+infobar,
+infobar.info,
+infobar.question,
+infobar.warning,
+infobar.error,
+infobar > revealer > box {
+  background-color: @g_bg_alt;
+  background-image: none;
+  border: none;
+  border-bottom: 1px solid @g_border;
+  color: @g_fg;
+}
+infobar.error > revealer > box,
+infobar.error { box-shadow: inset 3px 0 @g_accent; }
+
+/* -------------------------------------------------------- calendar, misc */
+
+/* No vertical padding: GtkCalendar offsets the selection box by it but not the numbers. */
+calendar { margin: 10px; padding: 0 14px; color: @g_fg; border: 1px solid @g_border; border-radius: 8px; }
+calendar.button { padding: 4px 8px; }
+calendar.header { border-bottom: 1px solid @g_border; }
+calendar:indeterminate { color: @g_fg_disabled; }
+calendar.highlight { color: @g_fg_dim; font-family: "IBM Plex Mono"; }
+
+spinner { color: @g_fg_dim; }
+spinner:checked { color: @g_fg_strong; }
+
+dialog .dialog-action-area,
+messagedialog .dialog-action-box { padding: 16px 20px; }
+dialog .dialog-action-area button { margin-left: 8px; }
+dialog .dialog-vbox { padding: 8px; }
+messagedialog .titlebar { background-color: @g_bg; border: none; }
+messagedialog label.title {
+  font-family: "Source Serif 4";
+  font-weight: 600;
+  font-feature-settings: "smcp";
+  font-size: 15pt;
+  color: @g_fg_strong;
+}
+
+.app-notification,
+.app-notification.frame {
+  padding: 14px 18px;
+  border-radius: 12px;
+  border: 1px solid @g_border;
+  background-color: @g_popover;
+  color: @g_fg;
+  box-shadow: 0 8px 24px @g_shadow_strong;
+}
+
+/* Text and pills that read like the site's .label and .pill */
+.pill,
+.badge {
+  padding: 3px 10px;
+  border-radius: 999px;
+  background-color: @g_bg_alt;
+  color: @g_fg;
+}
+
+/* ============================================================== Xfce bits */
+
+/* xfce4-panel: translucent paper, like the site's nav bar, with a stone hairline.
+   Only the panel window itself gets the colour; nested widgets stay clear so the
+   alpha does not stack. */
+.xfce4-panel.background {
+  padding: 0 20px;
+  background-color: @g_panel;
+  background-image: none;
+  border-style: solid;
+  border-color: @g_border;
+  border-width: 0 0 1px 0;
+}
+.xfce4-panel.background * { background-color: transparent; }
+/* Menus, popups and tooltips opened from the panel inherit its CSS node, so
+   give them back their solid backgrounds (these selectors outrank the line above). */
+.xfce4-panel.background menu,
+.xfce4-panel.background .menu,
+.xfce4-panel.background window,
+.xfce4-panel.background popover { background-color: @g_popover; }
+.xfce4-panel.background menu menuitem:hover,
+.xfce4-panel.background .menu menuitem:hover { background-color: @g_selected_bg; }
+.xfce4-panel.background menu separator { background-color: @g_border; }
+.xfce4-panel.background tooltip,
+.xfce4-panel.background tooltip.background { background-color: @g_tooltip_bg; }
+.xfce4-panel { color: @g_fg; font-family: "Inter"; }
+.xfce4-panel button,
+.xfce4-panel button.flat,
+.xfce4-panel .toggle {
+  min-height: 0;
+  margin: 0 4px;
+  padding: 4px 16px;
+  border-radius: 6px;
+  background-color: transparent;
+  box-shadow: none;
+  color: @g_fg;
+}
+.xfce4-panel.background button:hover { background-color: @g_hover; }
+.xfce4-panel.background button:checked,
+.xfce4-panel.background button:active { background-color: @g_active; }
+.xfce4-panel image { color: @g_fg; -gtk-icon-shadow: none; }
+.xfce4-panel label { color: @g_fg; }
+.xfce4-panel separator,
+.xfce4-panel .separator { background: transparent; }
+
+/* Applications menu as a small text label: MENU */
+#applicationsmenu-1 button,
+#whiskermenu-1 button {
+  padding: 4px 20px;
+}
+#applicationsmenu-1 image {
+  opacity: 0;
+  min-width: 0;
+  margin-right: -16px;
+}
+#applicationsmenu-1 label,
+#whiskermenu-1 label {
+  font-family: "Source Serif 4";
+  font-weight: 600;
+  font-size: 11pt;
+  font-feature-settings: "smcp, c2sc";
+  letter-spacing: 0.6px;
+  color: @g_fg_strong;
+}
+
+/* Window buttons: quiet, with a 2px ink line under the active window */
+#tasklist-2 button {
+  margin: 0 3px;
+  padding: 4px 18px;
+  border-radius: 0;
+  box-shadow: none;
+}
+#tasklist-2 button:checked {
+  background-color: transparent;
+  box-shadow: inset 0 -2px @g_fg_strong;
+}
+#tasklist-2 button:hover { background-color: @g_hover; }
+#tasklist-2 button.urgent,
+#tasklist-2 button:hover.urgent { box-shadow: inset 0 -2px @g_accent; }
+
+/* Workspace switcher: small pills, numbered I to IV, the active one inverted */
+#pager-30 button {
+  min-width: 20px;
+  min-height: 0;
+  margin: 8px 5px;
+  padding: 0 12px;
+  border-radius: 999px;
+  background-color: transparent;
+  background-image: none;
+  box-shadow: inset 0 0 0 1px @g_border_strong;
+  font-family: "Source Serif 4";
+  font-size: 10pt;
+  color: @g_fg_dim;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+#pager-30 button:hover { background-color: @g_hover; color: @g_fg_strong; }
+#pager-30 button:checked {
+  background-color: @g_selected_bg;
+  background-image: none;
+  box-shadow: none;
+  color: @g_selected_fg;
+}
+#pager-30 button:checked label { color: @g_selected_fg; }
+
+/* Clock: a running head in serif small caps, e.g. Wed 14 Oct · 09:41 */
+#clock-23 label,
+#clock-23 button label {
+  font-family: "Source Serif 4";
+  font-size: 11pt;
+  color: @g_fg_strong;
+}
+#clock-23 button { padding: 4px 24px; }
+
+/* Indicators */
+#systray-15,
+#systray-15 button { padding: 0 10px; }
+/* breathing room where the old separators sit */
+#separator-7, #separator-8, #separator-14 { min-width: 28px; }
+/* The panel window ignores its own padding, so the end items carry it */
+#applicationsmenu-1 button { margin-left: 16px; }
+#actions-3 button:last-child { margin-right: 16px; }
+#systemload-6 { padding: 0 10px; }
+#systemload-6 box { margin: 0 6px; }
+#systemload-6 label { margin-right: 4px; font-family: "IBM Plex Mono"; font-size: 8pt; letter-spacing: 1px; color: @g_fg_dim; }
+#systemload-6 progressbar trough { background-color: @g_trough; min-width: 4px; }
+#systemload-6 progressbar progress { background-color: @g_fg_dim; }
+
+/* Whisker menu, if it is ever used */
+#whiskermenu-window,
+#whiskermenu-window > frame > border {
+  background-color: @g_popover;
+  border: 1px solid @g_frame;
+  border-radius: 8px;
+}
+#whiskermenu-window button { box-shadow: none; }
+#whiskermenu-window button:checked { background-color: @g_selected_bg; color: @g_selected_fg; }
+#whiskermenu-window treeview.view,
+#whiskermenu-window iconview { background-color: @g_popover; }
+
+/* App finder */
+#xfce4-appfinder,
+window.xfce4-appfinder { background-color: @g_bg; }
+#xfce4-appfinder treeview.view.sidebar,
+#xfce4-appfinder .sidebar treeview.view { background-color: @g_bg_alt; }
+
+/* Xfce settings dialogs: the sidebar in the settings manager */
+#XfceSettingsManagerDialog iconview,
+.xfce4-settings-manager iconview { background-color: @g_bg; }
+XfceTitledDialog .dialog-vbox > box:first-child { background-color: @g_bg; }
+.xfce-heading,
+XfceHeading {
+  background-color: @g_bg;
+  color: @g_fg_strong;
+  font-family: "Source Serif 4";
+  font-weight: 600;
+  font-size: 15pt;
+  font-feature-settings: "smcp";
+  border-bottom: 1px solid @g_rule;
+  padding-bottom: 6px;
+}
+
+/* xfwm4 tabwin (alt-tab) */
+#xfwm-tabwin {
+  padding: 12px;
+  background-color: @g_popover;
+  border: 1px solid @g_frame;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px @g_shadow_strong;
+}
+#xfwm-tabwin button {
+  background: transparent;
+  box-shadow: none;
+  border-radius: 6px;
+  color: @g_fg;
+}
+#xfwm-tabwin button:checked,
+#xfwm-tabwin button:hover {
+  background-color: @g_selected_bg;
+  color: @g_selected_fg;
+}
+
+/* Terminal: the menubar is off, but tabs follow the notebook rules above.
+   VTE paints its own background, which comes from terminalrc. */
+vte-terminal { padding: 12px; }
+.xfce4-terminal notebook > header { background-color: @g_bg; }
+
+/* ================================================== unfocused windows
+   Adwaita restyles everything in :backdrop. Keep the same quiet look,
+   one step dimmer, so unfocused windows don't lose their rules. */
+
+button:backdrop,
+combobox button:backdrop {
+  background-color: transparent;
+  background-image: none;
+  box-shadow: inset 0 0 0 1px @g_border;
+  color: @g_fg_dim;
+}
+button:backdrop label { color: @g_fg_dim; }
+button.flat:backdrop,
+toolbar button:backdrop,
+headerbar button:backdrop,
+.titlebar button:backdrop,
+.path-bar button:backdrop,
+notebook > header > tabs > tab button:backdrop { box-shadow: none; }
+button.suggested-action:backdrop,
+button.default:backdrop { background-color: @g_primary_hover; box-shadow: none; color: @g_primary_fg; }
+button.suggested-action:backdrop label,
+button.default:backdrop label { color: @g_primary_fg; }
+button.destructive-action,
+button.destructive-action:backdrop,
+button.destructive-action:hover:backdrop {
+  background-color: transparent;
+  background-image: none;
+  color: @g_fg_strong;
+  box-shadow: inset 0 0 0 1px @g_border_strong;
+}
+button.destructive-action label,
+button.destructive-action:backdrop label { color: @g_fg_strong; }
+
+entry:backdrop,
+spinbutton:not(.vertical):backdrop {
+  background-color: @g_view;
+  box-shadow: inset 0 0 0 1px @g_border;
+  color: @g_fg_dim;
+}
+spinbutton:not(.vertical):backdrop entry { box-shadow: none; background: transparent; }
+
+notebook > header:backdrop,
+notebook > header > tabs > tab:backdrop { background-color: @g_bg; }
+notebook > header > tabs > tab:checked:backdrop { box-shadow: inset 0 -2px @g_fg_dim; }
+
+check:backdrop,
+radio:backdrop { box-shadow: inset 0 0 0 1px @g_border_strong; background-color: transparent; }
+check:checked:backdrop,
+radio:checked:backdrop { background-color: @g_fg_dim; box-shadow: none; color: @g_primary_fg; }
+switch:backdrop { background-color: @g_border_strong; }
+switch:checked:backdrop { background-color: @g_fg_dim; }
+
+*:selected:backdrop,
+treeview.view:selected:backdrop,
+row:selected:backdrop { background-color: @g_item_sel_bg; color: @g_item_sel_fg; }
+
+/* Menus count as unfocused (the panel never takes focus, and a submenu
+   steals it from its parent). Adwaita then clears the hover background and
+   dims the text, which left black labels on the dark menu. Keep menus as they are. */
+menu menuitem:backdrop,
+.menu menuitem:backdrop { color: @g_fg; }
+menu menuitem:hover:backdrop,
+.menu menuitem:hover:backdrop,
+.xfce4-panel.background menu menuitem:hover:backdrop { background-color: @g_selected_bg; color: @g_selected_fg; }
+menu menuitem:disabled:backdrop,
+menu menuitem:disabled:backdrop label { color: @g_fg_disabled; }
+
+/* ---------------------------------------------------------- login screen */
+/* lightdm-gtk-greeter, which names its widgets. The painting fills the
+   screen; the login box is a card hung on it, the top bar a strip of wall. */
+
+#panel_window {
+  background-color: @g_panel;
+  background-image: none;
+  color: @g_fg;
+  box-shadow: inset 0 -1px @g_border;
+}
+#panel_window menubar { background: transparent; box-shadow: none; padding: 0 8px; }
+#panel_window menubar > menuitem { padding: 6px 10px; border-radius: 7px; color: @g_fg; }
+#panel_window menubar > menuitem:hover { background-color: @g_hover; color: @g_fg_strong; }
+#clock_menuitem label { font-family: "IBM Plex Mono"; color: @g_fg_dim; }
+#layout_menuitem > label {
+  border: 1px solid @g_border_strong;
+  border-radius: 6px;
+  background: transparent;
+}
+
+#login_window,
+#power_window {
+  background-color: @g_bg;
+  background-image: none;
+  color: @g_fg;
+  border-radius: 12px;
+  box-shadow: 0 0 0 1px @g_frame, 0 2px 4px @g_shadow, 0 12px 32px @g_shadow_strong;
+  margin: 32px;
+}
+#login_window #content_frame,
+#login_window #buttonbox_frame,
+#power_window #content_frame,
+#power_window #buttonbox_frame { background: transparent; border: none; box-shadow: none; }
+#login_window #content_frame { padding: 12px 12px 0; }
+#login_window #buttonbox_frame { padding: 0 12px 12px; }
+
+#user_image_border { background: transparent; border: none; }
+#user_image { -gtk-icon-style: symbolic; color: @g_fg_dim; }
+#user_combobox button { font-family: "Source Serif 4"; font-size: 1.25em; }
+#prompt_entry { min-height: 34px; }
+
+#greeter_infobar,
+#greeter_infobar revealer > box {
+  background-color: @g_bg_alt;
+  color: @g_fg;
+  border: none;
+  box-shadow: inset 0 1px @g_border, inset 0 -1px @g_border;
+}
+
+#login_button,
+#power_ok_button {
+  background-color: @g_primary_bg;
+  background-image: none;
+  color: @g_primary_fg;
+  box-shadow: 0 1px 3px @g_shadow_strong;
+}
+#login_button label,
+#power_ok_button label { color: @g_primary_fg; }
+#login_button:hover,
+#power_ok_button:hover { background-color: @g_primary_hover; box-shadow: 0 2px 8px @g_shadow_strong; }

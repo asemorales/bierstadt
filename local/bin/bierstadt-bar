@@ -1,0 +1,159 @@
+#!/usr/bin/env bash
+# bierstadt-bar: the eww running head that replaces the Xfce panel.
+#
+#   bierstadt-bar start        quit xfce4-panel and open the bar
+#   bierstadt-bar stop         close the bar and bring xfce4-panel back
+#   bierstadt-bar room         recolour the bar for the current bierstadt-mode room
+#   bierstadt-bar goto N       switch to workspace N (from 0)
+#   bierstadt-bar instruments  open btop in its own Kitty window, or close it
+#   bierstadt-bar wifi         pick a nearby network in its own Kitty window, or close it
+#
+# eww calls these itself:
+#   workspaces, volume           print a new line whenever the value changes
+#   network                      print the current connection once
+#   volume-up, volume-down       scroll on the volume
+#   volume-set N                 drag the volume slider to N%
+#
+# Layout: ~/.config/eww/eww.yuck. Colours: ~/.config/eww/_dark.scss and _light.scss.
+
+set -euo pipefail
+
+EWW_DIR="$HOME/.config/eww"
+STATE_DIR="$HOME/.local/state/bierstadt"
+TSV="$HOME/.local/share/bierstadt/paintings.tsv"
+export PATH="$HOME/.local/bin:$PATH"   # eww runs bierstadt-bar, bierstadt-mode and itself by name
+
+usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; }
+
+room() {
+  local mode
+  mode=$(bierstadt-mode status 2>/dev/null || echo dark)
+  ln -sfn "_$mode.scss" "$EWW_DIR/_room.scss"
+  if eww ping >/dev/null 2>&1; then eww reload >/dev/null; fi
+}
+
+root_prop() { xprop -root "$1" | awk '{ print $NF }'; }
+
+# The painting that hangs on workspace N, for the plate's tooltip.
+painting() {
+  local set key
+  mapfile -t set < "$STATE_DIR/set" 2>/dev/null || return 0
+  [ "${#set[@]}" -gt 0 ] || return 0
+  key=${set[$1 % ${#set[@]}]}
+  awk -F'\t' -v k="$key" '$1 == k { print $3 ", " $4 ", " $5 }' "$TSV" 2>/dev/null
+}
+
+workspaces() {
+  xprop -spy -root _NET_CURRENT_DESKTOP _NET_NUMBER_OF_DESKTOPS | while read -r _; do
+    local cur n names=() tips=() i
+    cur=$(root_prop _NET_CURRENT_DESKTOP)
+    n=$(root_prop _NET_NUMBER_OF_DESKTOPS)
+    mapfile -t names < <(xprop -root _NET_DESKTOP_NAMES | grep -o '"[^"]*"' | tr -d '"')
+    for ((i = 0; i < n; i++)); do
+      names[i]=${names[i]:-$((i + 1))}
+      tips+=("$(painting "$i")")
+    done
+    jq -nc --argjson cur "$cur" --argjson n "$n" \
+      '$ARGS.positional as $a
+        | [range($n) as $i | {n: $i, name: $a[$i], painting: $a[$n + $i], on: ($i == $cur)}]' \
+      --args "${names[@]:0:n}" "${tips[@]}"
+  done
+}
+
+# {"pct":40,"muted":false}, for the slider and its label.
+volume_now() {
+  local pct muted=false
+  pct=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -o '[0-9]*%' | head -1 | tr -d %)
+  if pactl get-sink-mute @DEFAULT_SINK@ | grep -q yes; then muted=true; fi
+  echo "{\"pct\":${pct:-0},\"muted\":$muted}"
+}
+
+volume() {
+  volume_now
+  pactl subscribe | grep --line-buffered -e "on sink" -e "on server" | while read -r _; do volume_now; done
+}
+
+network() {
+  nmcli -t -f TYPE,STATE,CONNECTION dev 2>/dev/null \
+    | awk -F: '($1 == "wifi" || $1 == "ethernet") && $2 == "connected" { print tolower($3); found = 1; exit }
+               END { if (!found) print "offline" }'
+}
+
+# nmtui's network list: everything in range, saved or not, with a password
+# prompt for new ones. nm-connection-editor only lists saved connections, so it
+# stays on right-click. A second click closes the window.
+wifi() {
+  if pkill -f "^kitty --class bierstadt-wifi" 2>/dev/null; then return 0; fi
+  nmcli dev wifi rescan >/dev/null 2>&1 || true
+  # newt (nmtui's toolkit) takes hex colours when COLORTERM=truecolor, so it is
+  # dressed in the current room's eww palette instead of its blue and red.
+  local scss page panel rule frame mid dim text
+  scss="$EWW_DIR/_$(bierstadt-mode status 2>/dev/null || echo dark).scss"
+  pal() { sed -n "s/^\$$1: *\(#[0-9A-Fa-f]\{6\}\);.*/\1/p" "$scss"; }
+  page=$(pal page) panel=$(pal panel) rule=$(pal rule) frame=$(pal frame)
+  mid=$(pal mid) dim=$(pal dim) text=$(pal text)
+  local -x COLORTERM=truecolor NEWT_COLORS="
+    root=$text,$page roottext=$dim,$page helpline=$dim,$page shadow=$page,$page
+    border=$frame,$panel window=$text,$panel title=$text,$panel label=$dim,$panel
+    textbox=$text,$panel acttextbox=$page,$text
+    listbox=$text,$panel actlistbox=$page,$text sellistbox=$text,$rule actsellistbox=$page,$text
+    entry=$text,$page disentry=$mid,$panel checkbox=$text,$panel actcheckbox=$page,$text
+    button=$text,$rule actbutton=$page,$text compactbutton=$dim,$panel
+    emptyscale=,$rule fullscale=,$text"
+  (setsid kitty --class bierstadt-wifi --title Network \
+     -o remember_window_size=no -o initial_window_width=72c -o initial_window_height=28c \
+     nmtui connect >/dev/null 2>&1 &)
+}
+
+# btop, the "instruments" behind cpu and mem, in the room's colours. btop
+# rewrites its config on exit, so the config stays local and only the themes
+# (config/btop/themes) live in the repo. A second click closes the window.
+instruments() {
+  local conf="$HOME/.config/btop/btop.conf" mode
+  if pkill -f "^kitty --class bierstadt-instruments" 2>/dev/null; then return 0; fi
+  command -v btop >/dev/null || { echo "bierstadt-bar: btop is not installed" >&2; exit 1; }
+  mode=$(bierstadt-mode status 2>/dev/null || echo dark)
+  mkdir -p "${conf%/*}"
+  [ -s "$conf" ] || btop --default-config > "$conf"
+  sed -i -e "s|^color_theme = .*|color_theme = \"bierstadt-$mode\"|" \
+         -e 's|^theme_background = .*|theme_background = False|' \
+         -e 's|^rounded_corners = .*|rounded_corners = True|' \
+         -e 's|^graph_symbol = .*|graph_symbol = "braille"|' \
+         -e 's|^vim_keys = .*|vim_keys = True|' "$conf"
+  (setsid kitty --class bierstadt-instruments --title Instruments \
+     -o remember_window_size=no -o initial_window_width=160c -o initial_window_height=46c \
+     btop >/dev/null 2>&1 &)
+}
+
+start() {
+  command -v eww >/dev/null || { echo "bierstadt-bar: eww is not installed" >&2; exit 1; }
+  room
+  # --quit stops the session restarting it. Only send it to a running panel:
+  # with none running, xfce4-panel pops up a "No running instance" dialog.
+  if pgrep -x xfce4-panel >/dev/null; then xfce4-panel --quit 2>/dev/null || true; fi
+  eww daemon 2>/dev/null || true
+  eww open bar
+}
+
+stop() {
+  eww close-all 2>/dev/null || true
+  eww kill 2>/dev/null || true
+  (setsid xfce4-panel >/dev/null 2>&1 &)
+}
+
+case "${1:-}" in
+  start)       start ;;
+  stop)        stop ;;
+  room)        room ;;
+  instruments) instruments ;;
+  wifi)        wifi ;;
+  goto)        xdotool set_desktop "${2:?workspace number}" ;;
+  workspaces)  workspaces ;;
+  volume)      volume ;;
+  volume-up)   pactl set-sink-volume @DEFAULT_SINK@ +5% ;;
+  volume-down) pactl set-sink-volume @DEFAULT_SINK@ -5% ;;
+  volume-set)  pactl set-sink-volume @DEFAULT_SINK@ "${2%.*}%" ;;
+  network)     network ;;
+  -h|--help)   usage ;;
+  *)           usage; exit 2 ;;
+esac

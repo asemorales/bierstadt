@@ -1,0 +1,59 @@
+/* Bierstadt for Firefox's new tab page: the room's first painting, hung edge
+ * to edge, with the search box resting on it like a museum label.
+ *
+ * This is a template. bierstadt-mode fills in the painting and label and
+ * writes the result to <profile>/chrome/userContent.css, because the new tab
+ * page cannot read a file next to a symlinked sheet. The painting goes in as
+ * a data: URL, which the page's security policy allows.
+ *
+ *   @PAINTING@   data: URL of the painting
+ *   @LABEL@      ARTIST · TITLE · YEAR
+ *   @PAGE@ @TEXT@ @DIM@   the room's colours */
+
+@-moz-document url("about:newtab"), url("about:home"), url("about:privatebrowsing") {
+  body {
+    background: @PAGE@ url("@PAINTING@") center / cover no-repeat fixed !important;
+    --newtab-background-color: transparent !important;
+  }
+
+  /* No Firefox logo. The painting is the page. */
+  .logo-and-wordmark-wrapper,
+  .logo-and-wordmark {
+    display: none !important;
+  }
+
+  /* The search box: page-coloured and softly translucent, with a round edge. */
+  .search-wrapper .search-handoff-button,
+  .search-wrapper input {
+    background-color: color-mix(in srgb, @PAGE@ 88%, transparent) !important;
+    color: @TEXT@ !important;
+    border: none !important;
+    border-radius: 999px !important;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.25) !important;
+    backdrop-filter: blur(12px) !important;
+  }
+  .search-wrapper .search-handoff-button .fake-textbox {
+    color: @DIM@ !important;
+  }
+
+  /* The settings cog stays, but quiet. */
+  .personalize-button {
+    background-color: color-mix(in srgb, @PAGE@ 70%, transparent) !important;
+    fill: @DIM@ !important;
+  }
+
+  /* The label in serif small caps, bottom left, like the desktop caption. */
+  body::after {
+    content: "@LABEL@";
+    position: fixed;
+    left: 32px;
+    bottom: 28px;
+    padding: 6px 12px;
+    border-radius: 6px;
+    background: color-mix(in srgb, @PAGE@ 80%, transparent);
+    color: @DIM@;
+    font: 600 11px "Source Serif 4", serif;
+    font-feature-settings: "smcp", "c2sc";
+    letter-spacing: 0.08em;
+  }
+}

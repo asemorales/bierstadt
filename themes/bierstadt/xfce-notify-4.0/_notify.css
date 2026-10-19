@@ -1,0 +1,53 @@
+/* Bierstadt notifications: rounded cards with a hairline frame.
+   Shared by both variants; colours come from each variant's gtk.css below. */
+
+#XfceNotifyWindow {
+  background-color: @n_bg;
+  border: 1px solid @n_border;
+  border-radius: 12px;
+  padding: 18px 20px;
+}
+#XfceNotifyWindow:hover { border-color: @n_border_hover; }
+
+#XfceNotifyWindow label,
+#XfceNotifyWindow #body { color: @n_fg; font-family: "Inter"; }
+#XfceNotifyWindow label#summary {
+  color: @n_fg_strong;
+  font-family: "Source Serif 4";
+  font-weight: 600;
+  font-size: 13pt;
+  font-feature-settings: "smcp";
+}
+#XfceNotifyWindow label#body { color: @n_fg; }
+#XfceNotifyWindow label#body:link { color: @n_fg_strong; }
+
+#XfceNotifyWindow button {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  background: transparent;
+  box-shadow: inset 0 0 0 1px @n_border_strong;
+  color: @n_fg_strong;
+  transition: all 250ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+#XfceNotifyWindow button:hover {
+  background-color: @n_hover;
+  box-shadow: inset 0 0 0 1px @n_border_hover;
+}
+#XfceNotifyWindow button label { color: @n_fg_strong; }
+
+#XfceNotifyWindow progressbar trough {
+  min-height: 4px;
+  border: none;
+  border-radius: 999px;
+  background-color: @n_border;
+}
+#XfceNotifyWindow progressbar progress {
+  min-height: 4px;
+  border: none;
+  border-radius: 999px;
+  background-color: @n_fg_strong;
+}
+#XfceNotifyWindow progressbar text { color: @n_fg; }
+
+#XfceNotifyWindow.critical { border-color: @n_fg_strong; border-width: 2px; }

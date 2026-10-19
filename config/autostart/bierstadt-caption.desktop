@@ -1,0 +1,7 @@
+[Desktop Entry]
+Type=Application
+Name=Bierstadt caption
+Comment=The small wall label for the current painting
+Exec=sh -c "sleep 3; $HOME/.local/bin/bierstadt-caption start"
+OnlyShowIn=XFCE;
+X-GNOME-Autostart-enabled=true

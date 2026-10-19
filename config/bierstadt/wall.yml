@@ -1,0 +1,147 @@
+# Which paintings hang in each room, and how to fit them to the screen.
+# Read by ~/.local/bin/bierstadt-mode. Run `bierstadt-mode data` after editing.
+
+# One painting per workspace, in order. Keys come from `paintings` below.
+rooms:
+  light: [monet, monsted, polenov, kuindzhi]
+  dark: [bierstadt, bierstadt_landers, bierstadt_valley, bierstadt_rocky]   # all Bierstadt
+
+# The painting behind the boot menu (bierstadt-grub) and the login screen
+# (bierstadt-greeter) in both rooms. Leave it out to use each room's first painting.
+login: bierstadt_lucerne
+
+# Paintings are cropped to fill the screen. This is the share of the cut taken
+# from the top (1 = all sky, 0 = all foreground). Crop sky or land, never figures.
+crop_top:
+  monet: 0.35          # the two women stand mid-frame on the cliff
+  monsted: 0.5
+  polenov: 0.85        # children and the path sit at the bottom
+  kuindzhi: 0.5
+  bierstadt: 0.7       # deer at the water's edge
+  church: 0.5
+  aivazovsky: 0.85     # survivors on the mast, bottom left
+  bierstadt_landers: 0.8    # the encampment fills the foreground
+  bierstadt_valley: 0.75    # cattle by the river
+  bierstadt_storm: 0.5
+  bierstadt_rocky: 0.65     # the deer by the water, bottom centre
+  bierstadt_staubbach: 0.5  # the peaks and the falls, the valley floor below
+  bierstadt_lucerne: 0.4    # the campfire and the cattle on the path, bottom left
+  kuindzhi_moon: 0.45  # keep the moon clear of the panel and the river in view
+
+# Caption lines that replace a painting's `life` sentence. An empty string
+# shows the label alone.
+life:
+  bierstadt: ""
+  # light room: the label alone
+  monet: ""
+  monsted: ""
+  polenov: ""
+  kuindzhi: ""
+
+# Every painting a room or the login screen can hang. `life` is optional.
+paintings:
+  bierstadt:
+    artist: Albert Bierstadt
+    title: Among the Sierra Nevada, California
+    year: "1868"
+    collection: Smithsonian American Art Museum, Washington
+    source: https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_Among_the_Sierra_Nevada,_California_-_Google_Art_Project.jpg
+    image: bierstadt-sierra-nevada
+    life: He outlived his own fame and was forgotten for decades after his death.
+  monet:
+    artist: Claude Monet
+    title: Cliff Walk at Pourville
+    year: "1882"
+    collection: The Art Institute of Chicago
+    source: https://commons.wikimedia.org/wiki/File:Claude_Monet_-_Cliff_Walk_at_Pourville_-_Google_Art_Project.jpg
+    image: monet-cliff-walk
+    life: He kept painting through poverty, grief, and the cataracts that clouded his last decades.
+  monsted:
+    artist: Peder Mørk Mønsted
+    title: Summer Day by a Stream
+    year: "1906"
+    collection: Private collection
+    source: https://commons.wikimedia.org/wiki/File:Peder_M%C3%B8nsted_-_Sommerdag_ved_et_%C3%A5l%C3%B8b._Til_h%C3%B8jre_gr%C3%A6ssende_k%C3%B8er_p%C3%A5_marken_-_1906.png
+    image: monsted-summer-stream
+    life: He spent more than sixty years chasing the light of Danish summers.
+  polenov:
+    artist: Vasily Polenov
+    title: Moscow Courtyard
+    year: "1878"
+    collection: State Tretyakov Gallery, Moscow
+    source: https://commons.wikimedia.org/wiki/File:Moscow_Courtyard_(Polenov,_1878)_-_Google_Art_Project.jpg
+    image: polenov-moscow-courtyard
+    life: He painted this quiet courtyard soon after serving as a war artist.
+  kuindzhi:
+    artist: Arkhip Kuindzhi
+    title: Birch Grove
+    year: "1879"
+    collection: State Russian Museum, Saint Petersburg
+    source: https://commons.wikimedia.org/wiki/File:0828Ha._Kuindzhi_A.I._Birch_Grove,_1879.jpg
+    image: kuindzhi-birch-grove
+    life: Orphaned at six, he worked as a herder and a photo retoucher before he could study art.
+  church:
+    artist: Frederic Edwin Church
+    title: Twilight in the Wilderness
+    year: "1860"
+    collection: Cleveland Museum of Art
+    source: https://commons.wikimedia.org/wiki/File:Frederic_Edwin_Church_-_Twilight_in_the_Wilderness.jpg
+    image: church-twilight
+    life: In his last decades rheumatism stiffened his painting hand, and he poured himself into his house, Olana.
+  aivazovsky:
+    artist: Ivan Aivazovsky
+    title: The Ninth Wave
+    year: "1850"
+    collection: State Russian Museum, Saint Petersburg
+    source: https://commons.wikimedia.org/wiki/File:Hovhannes_Aivazovsky_-_The_Ninth_Wave_-_Google_Art_Project.jpg
+    image: aivazovsky-ninth-wave
+    life: He painted thousands of seascapes, almost all of them from memory rather than from life.
+  kuindzhi_moon:
+    artist: Arkhip Kuindzhi
+    title: Moonlit Night on the Dnieper
+    year: "1880"
+    collection: State Russian Museum, Saint Petersburg
+    source: https://commons.wikimedia.org/wiki/File:Arkhip_Kuindzhi_-_%D0%9D%D0%BE%D1%87%D1%8C_%D0%BD%D0%B0_%D0%94%D0%BD%D0%B5%D0%BF%D1%80%D0%B5_-_Google_Art_Project.jpg
+    image: kuindzhi-moonlit-dnieper
+    life: He showed this painting alone in a darkened room, and people queued for hours to see it.
+  bierstadt_landers:
+    artist: Albert Bierstadt
+    title: The Rocky Mountains, Lander's Peak
+    year: "1863"
+    collection: The Metropolitan Museum of Art, New York
+    source: https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_The_Rocky_Mountains,_Lander%27s_Peak.jpg
+    image: bierstadt-landers-peak
+  bierstadt_valley:
+    artist: Albert Bierstadt
+    title: Valley of the Yosemite
+    year: "1864"
+    collection: Museum of Fine Arts, Boston
+    source: https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_Valley_of_the_Yosemite_-_Google_Art_Project.jpg
+    image: bierstadt-valley-of-yosemite
+  bierstadt_storm:
+    artist: Albert Bierstadt
+    title: A Storm in the Rocky Mountains, Mt. Rosalie
+    year: "1866"
+    collection: Brooklyn Museum, New York
+    source: https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_A_Storm_in_the_Rocky_Mountains,_Mt._Rosalie_-_Google_Art_Project.jpg
+    image: bierstadt-storm-rosalie
+  bierstadt_staubbach:
+    artist: Albert Bierstadt
+    title: Staubbach Falls, Near Lauterbrunnen, Switzerland
+    year: "c. 1865"
+    source: https://commons.wikimedia.org/wiki/File:Bierstadt_Albert_Staubbach_Falls_Near_Lauterbrunnen_Switzerland.jpg
+    image: bierstadt-staubbach-falls
+  bierstadt_lucerne:
+    artist: Albert Bierstadt
+    title: Lake Lucerne
+    year: "1858"
+    collection: National Gallery of Art, Washington
+    source: https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_Lake_Lucerne_-_Google_Art_Project.jpg
+    image: bierstadt-lake-lucerne
+  bierstadt_rocky:
+    artist: Albert Bierstadt
+    title: Rocky Mountain Landscape
+    year: "1870"
+    collection: The White House, Washington
+    source: https://commons.wikimedia.org/wiki/File:Albert_Bierstadt_-_Rocky_Mountain_Landscape_-_Google_Art_Project.jpg
+    image: bierstadt-rocky-mountain-landscape

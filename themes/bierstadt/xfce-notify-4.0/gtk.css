@@ -1,0 +1,10 @@
+@import url("../gtk-3.0/_palette.css");
+@define-color n_bg            @paper;
+@define-color n_border        alpha(@ink, 0.35);
+@define-color n_border_strong alpha(@ink, 0.20);
+@define-color n_border_hover  alpha(@ink, 0.40);
+@define-color n_hover         alpha(@ink, 0.05);
+@define-color n_fg            alpha(@ink, 0.88);
+@define-color n_fg_strong     @ink;
+@define-color n_shadow        alpha(@ink, 0.06);
+@import url("_notify.css");

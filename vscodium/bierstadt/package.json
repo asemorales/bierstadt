@@ -1,0 +1,25 @@
+{
+  "name": "bierstadt",
+  "displayName": "Bierstadt",
+  "description": "The dark and light Bierstadt rooms: ink on paper, no accent colour.",
+  "version": "0.1.0",
+  "publisher": "bierstadt",
+  "engines": {
+    "vscode": "^1.70.0"
+  },
+  "categories": ["Themes"],
+  "contributes": {
+    "themes": [
+      {
+        "label": "Bierstadt Dark",
+        "uiTheme": "vs-dark",
+        "path": "./themes/bierstadt-dark.json"
+      },
+      {
+        "label": "Bierstadt Light",
+        "uiTheme": "vs",
+        "path": "./themes/bierstadt-light.json"
+      }
+    ]
+  }
+}

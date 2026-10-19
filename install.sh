@@ -32,6 +32,7 @@ mozilla_profile() {
 link_config() { do_link "$REPO/config/$1" "$HOME/.config/$1"; }
 link_theme()  { do_link "$REPO/themes/$1" "$HOME/.themes/$1"; }
 link_local()  { do_link "$REPO/local/$1" "$HOME/.local/$1"; }
+link_codium() { do_link "$REPO/vscodium/$1" "$HOME/.vscode-oss/extensions/$1"; }
 
 link_mozilla() {
   local profile
@@ -59,6 +60,8 @@ for f in "$REPO"/local/bin/bierstadt-*; do
   link_local "bin/$(basename "$f")"
 done
 link_local share/icons/bierstadt-icons-build.py
+
+link_codium bierstadt
 
 link_mozilla firefox "$HOME/.mozilla/firefox" user.js
 link_mozilla firefox "$HOME/.mozilla/firefox" chrome/userChrome.css

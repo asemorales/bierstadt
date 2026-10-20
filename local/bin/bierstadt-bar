@@ -7,10 +7,13 @@
 #   bierstadt-bar goto N       switch to workspace N (from 0)
 #   bierstadt-bar instruments  open btop in its own Kitty window, or close it
 #   bierstadt-bar wifi         pick a nearby network in its own Kitty window, or close it
+#   bierstadt-bar bluetooth    pick a nearby Bluetooth device the same way, or close it
+#   bierstadt-bar sound        pick the speakers and microphone the same way, or close it
 #
 # eww calls these itself:
 #   workspaces, volume           print a new line whenever the value changes
-#   network                      print the current connection once
+#   network                      print the connection and its icon once
+#   bluetooth-now                print the radio's state, its icon and any device once
 #   volume-up, volume-down       scroll on the volume
 #   volume-set N                 drag the volume slider to N%
 #
@@ -23,7 +26,7 @@ STATE_DIR="$HOME/.local/state/bierstadt"
 TSV="$HOME/.local/share/bierstadt/paintings.tsv"
 export PATH="$HOME/.local/bin:$PATH"   # eww runs bierstadt-bar, bierstadt-mode and itself by name
 
-usage() { sed -n '2,16p' "$0" | sed 's/^# \{0,1\}//'; }
+usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; }
 
 room() {
   local mode
@@ -62,10 +65,11 @@ workspaces() {
 
 # {"pct":40,"muted":false}, for the slider and its label.
 volume_now() {
-  local pct muted=false
+  local pct out muted=false
   pct=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -o '[0-9]*%' | head -1 | tr -d %)
   if pactl get-sink-mute @DEFAULT_SINK@ | grep -q yes; then muted=true; fi
-  echo "{\"pct\":${pct:-0},\"muted\":$muted}"
+  out=$(pactl -f json list sinks | jq -r --arg n "$(pactl get-default-sink)" '.[] | select(.name == $n) | .description')
+  jq -cn --argjson pct "${pct:-0}" --argjson muted "$muted" --arg out "$out" '{pct: $pct, muted: $muted, out: $out}'
 }
 
 volume() {
@@ -73,10 +77,45 @@ volume() {
   pactl subscribe | grep --line-buffered -e "on sink" -e "on server" | while read -r _; do volume_now; done
 }
 
+# {"icon":"network-wireless-signal-good-symbolic","name":"home"}. The bar's
+# icons are symbolic ones from the bierstadt icon theme, so GTK draws them in
+# the bar's text colour and they follow the room.
 network() {
-  nmcli -t -f TYPE,STATE,CONNECTION dev 2>/dev/null \
-    | awk -F: '($1 == "wifi" || $1 == "ethernet") && $2 == "connected" { print tolower($3); found = 1; exit }
-               END { if (!found) print "offline" }'
+  local type name signal icon
+  IFS=: read -r type name < <(nmcli -t -f TYPE,STATE,CONNECTION dev 2>/dev/null \
+    | awk -F: '($1 == "wifi" || $1 == "ethernet") && $2 == "connected" { print $1 ":" $3; exit }') || true
+  case "$type" in
+    wifi)
+      signal=$(nmcli -t -f IN-USE,SIGNAL dev wifi 2>/dev/null | awk -F: '$1 == "*" { print $2; exit }')
+      signal=${signal:-0}
+      if   ((signal >= 75)); then icon=excellent
+      elif ((signal >= 50)); then icon=good
+      elif ((signal >= 25)); then icon=ok
+      else                        icon=weak; fi
+      icon="network-wireless-signal-$icon-symbolic" ;;
+    ethernet) icon=network-wired-symbolic ;;
+    *)        icon=network-wireless-offline-symbolic name=Offline ;;
+  esac
+  jq -nc --arg icon "$icon" --arg name "$name" '{icon: $icon, name: $name}'
+}
+
+# newt (the toolkit behind nmtui and whiptail) takes hex colours when
+# COLORTERM=truecolor, so its windows are dressed in the current room's eww
+# palette instead of their blue and red.
+newt_colors() {
+  local scss page panel rule frame mid dim text
+  scss="$EWW_DIR/_$(bierstadt-mode status 2>/dev/null || echo dark).scss"
+  pal() { sed -n "s/^\$$1: *\(#[0-9A-Fa-f]\{6\}\);.*/\1/p" "$scss"; }
+  page=$(pal page) panel=$(pal panel) rule=$(pal rule) frame=$(pal frame)
+  mid=$(pal mid) dim=$(pal dim) text=$(pal text)
+  echo "
+    root=$text,$page roottext=$dim,$page helpline=$dim,$page shadow=$page,$page
+    border=$frame,$panel window=$text,$panel title=$text,$panel label=$dim,$panel
+    textbox=$text,$panel acttextbox=$page,$text
+    listbox=$text,$panel actlistbox=$page,$text sellistbox=$text,$rule actsellistbox=$page,$text
+    entry=$text,$page disentry=$mid,$panel checkbox=$text,$panel actcheckbox=$page,$text
+    button=$text,$rule actbutton=$page,$text compactbutton=$dim,$panel
+    emptyscale=,$rule fullscale=,$text"
 }
 
 # nmtui's network list: everything in range, saved or not, with a password
@@ -85,24 +124,207 @@ network() {
 wifi() {
   if pkill -f "^kitty --class bierstadt-wifi" 2>/dev/null; then return 0; fi
   nmcli dev wifi rescan >/dev/null 2>&1 || true
-  # newt (nmtui's toolkit) takes hex colours when COLORTERM=truecolor, so it is
-  # dressed in the current room's eww palette instead of its blue and red.
-  local scss page panel rule frame mid dim text
-  scss="$EWW_DIR/_$(bierstadt-mode status 2>/dev/null || echo dark).scss"
-  pal() { sed -n "s/^\$$1: *\(#[0-9A-Fa-f]\{6\}\);.*/\1/p" "$scss"; }
-  page=$(pal page) panel=$(pal panel) rule=$(pal rule) frame=$(pal frame)
-  mid=$(pal mid) dim=$(pal dim) text=$(pal text)
-  local -x COLORTERM=truecolor NEWT_COLORS="
-    root=$text,$page roottext=$dim,$page helpline=$dim,$page shadow=$page,$page
-    border=$frame,$panel window=$text,$panel title=$text,$panel label=$dim,$panel
-    textbox=$text,$panel acttextbox=$page,$text
-    listbox=$text,$panel actlistbox=$page,$text sellistbox=$text,$rule actsellistbox=$page,$text
-    entry=$text,$page disentry=$mid,$panel checkbox=$text,$panel actcheckbox=$page,$text
-    button=$text,$rule actbutton=$page,$text compactbutton=$dim,$panel
-    emptyscale=,$rule fullscale=,$text"
+  local -x COLORTERM=truecolor NEWT_COLORS
+  NEWT_COLORS=$(newt_colors)
   (setsid kitty --class bierstadt-wifi --title Network \
      -o remember_window_size=no -o initial_window_width=72c -o initial_window_height=28c \
      nmtui connect >/dev/null 2>&1 &)
+}
+
+# {"icon":"bluetooth-active-symbolic","tip":"Galaxy Buds"}.
+bluetooth_now() {
+  local icon=bluetooth-active-symbolic tip
+  if ! bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
+    icon=bluetooth-disabled-symbolic tip="Off"
+  else
+    tip=$(bluetoothctl devices Connected 2>/dev/null | head -1 | cut -d' ' -f3-)
+    tip=${tip:-On, nothing connected}
+  fi
+  jq -nc --arg icon "$icon" --arg tip "$tip" '{icon: $icon, tip: $tip}'
+}
+
+# There is no nmtui for Bluetooth, so this is one in whiptail (also newt):
+# scan, then list every named device in range or already paired. Choosing one
+# pairs, trusts and connects it, or disconnects it if it is connected. Devices
+# that only show an address (stray LE beacons, or earbuds not yet in pairing
+# mode) are left out. A second click on the bar closes the window.
+bluetooth() {
+  if pkill -f "^kitty --class bierstadt-bluetooth" 2>/dev/null; then return 0; fi
+  local -x COLORTERM=truecolor NEWT_COLORS
+  NEWT_COLORS=$(newt_colors)
+  (setsid kitty --class bierstadt-bluetooth --title Bluetooth \
+     -o remember_window_size=no -o initial_window_width=72c -o initial_window_height=28c \
+     "$0" bluetooth-menu >/dev/null 2>&1 &)
+}
+
+# whiptail clears the screen when a dialog exits, so an --infobox vanishes
+# the moment the slow bluetoothctl call behind it starts. A --gauge stays up
+# for as long as fd 4 is open, so the waits below say what is happening.
+bt_gauge() { exec 4> >(whiptail --title Bluetooth --gauge "$1" 8 60 0); gauge=$!; }
+bt_step()  { printf 'XXX\n%s\n%s\nXXX\n' "$1" "$2" >&4; }
+bt_close() { exec 4>&-; wait "$gauge" 2>/dev/null || true; }
+
+# bt_run FROM TO TEXT CMD...: run CMD in the background, creeping the gauge
+# from FROM towards TO until it ends. Its output is left in $tmp.
+bt_run() {
+  local pct=$1 to=$2 text=$3 pid; shift 3
+  "$@" >"$tmp" 2>&1 &
+  pid=$!
+  while kill -0 "$pid" 2>/dev/null; do
+    bt_step "$pct" "$text"
+    if [ "$pct" -lt "$to" ]; then pct=$((pct + 1)); fi
+    sleep 0.25
+  done
+  wait "$pid"
+}
+
+# The scan runs in the background for as long as the window is open, so the
+# menu shows paired devices at once and "Look again" picks up new ones. The
+# top of the menu says what is connected, with the battery when it is known.
+bluetooth_menu() {
+  local title="Bluetooth" choice mac name info status battery items devices line scan gauge tmp i n
+  local -A names
+  if ! bluetoothctl show | grep -q "Powered: yes"; then
+    whiptail --title "$title" --yesno "Bluetooth is off. Turn it on?" 8 40 || return 0
+    bt_gauge "Turning Bluetooth on..."
+    bt_run 0 90 "Turning Bluetooth on..." bluetoothctl power on
+    bt_close
+  fi
+  tmp=$(mktemp)
+  bluetoothctl --timeout 600 scan on >/dev/null 2>&1 &
+  scan=$!
+  trap 'kill "$scan" 2>/dev/null; rm -f "$tmp"' EXIT
+  trap 'exit 0' HUP TERM
+  while :; do
+    items=(rescan "Look again" power "Turn Bluetooth off")
+    status="" names=()
+    mapfile -t devices < <(bluetoothctl devices)
+    n=${#devices[@]} i=0
+    bt_gauge "Checking devices..."
+    for line in "${devices[@]}"; do
+      read -r _ mac name <<<"$line"
+      bt_step $((i++ * 100 / (n ? n : 1))) "Checking devices... $i of $n"
+      [ "$name" = "${mac//:/-}" ] && continue
+      names[$mac]=$name
+      info=$(bluetoothctl info "$mac")
+      if grep -q "Connected: yes" <<<"$info"; then
+        battery=$(sed -n 's/.*Battery Percentage: .*(\([0-9]*\)).*/\1/p' <<<"$info")
+        status+="Connected to $name${battery:+, battery $battery%}"$'\n'
+        name="$name   connected"
+      elif grep -q "Paired: yes" <<<"$info"; then name="$name   paired"
+      fi
+      # Audio over LE only (Audio Stream Control, no Audio Sink) is LE Audio,
+      # which Debian 12's PipeWire cannot play to. Earbuds that do both show
+      # up again under their classic address once in pairing mode.
+      if grep -q 0000184e <<<"$info" && ! grep -q 0000110b <<<"$info"; then
+        name="$name   no sound here"
+      fi
+      items+=("$mac" "$name")
+    done
+    bt_close
+    choice=$(whiptail --title "$title" --cancel-button Quit --notags \
+      --menu "${status:-Nothing connected$'\n'}"$'\n'"Choose a device to connect or disconnect" \
+      24 66 14 "${items[@]}" 3>&1 1>&2 2>&3) || return 0
+    case "$choice" in
+      rescan)
+        bt_gauge "Looking for devices..."
+        for ((i = 0; i <= 100; i += 5)); do
+          bt_step "$i" "Looking for devices... $(bluetoothctl devices | grep -c .) found"
+          sleep 0.3
+        done
+        bt_close
+        continue ;;
+      power)  bluetoothctl power off >/dev/null; return 0 ;;
+    esac
+    name=${names[$choice]}
+    bt_gauge "$name"
+    if bluetoothctl info "$choice" | grep -q "Connected: yes"; then
+      bt_run 0 90 "Disconnecting from $name..." bluetoothctl disconnect "$choice" || true
+      bt_close
+      eww update bluetooth="$(bluetooth_now)" 2>/dev/null || true
+      continue
+    fi
+    if ! bluetoothctl info "$choice" | grep -q "Paired: yes"; then
+      bt_run 0 40 "Pairing with $name..." bluetoothctl --timeout 20 pair "$choice" || true
+    fi
+    bt_run 40 50 "Trusting $name..." bluetoothctl trust "$choice" || true
+    bt_run 50 95 "Connecting to $name..." bluetoothctl connect "$choice" || true
+    if grep -q "Connection successful" "$tmp"; then
+      bt_step 100 "Connected to $name"
+      sleep 1
+      bt_close
+      eww update bluetooth="$(bluetooth_now)" 2>/dev/null || true
+      if bluetoothctl info "$choice" | grep -q 0000184e && ! bluetoothctl info "$choice" | grep -q 0000110b; then
+        whiptail --title "$title" --msgbox "$name is connected over Bluetooth LE Audio only, so it will not show up as a speaker.
+
+Remove this entry, put the earbuds in pairing mode, and connect the entry that appears for them then." 13 60
+      fi
+    else
+      bt_close
+      # bluetoothctl's last line is the reason, e.g. "Failed to connect:
+      # org.bluez.Error.Failed br-connection-profile-unavailable".
+      whiptail --title "$title" --msgbox "Could not connect to $name.
+
+$(tail -n 1 "$tmp" | sed 's/org\.bluez\.Error\.//')
+
+Check the device is in pairing mode and try again." 13 60
+    fi
+  done
+}
+
+# The speakers and microphone, picked the same way. Choosing one makes it the
+# default and moves whatever is already playing or recording onto it. A
+# second click on the bar closes the window.
+sound() {
+  if pkill -f "^kitty --class bierstadt-sound" 2>/dev/null; then return 0; fi
+  local -x COLORTERM=truecolor NEWT_COLORS
+  NEWT_COLORS=$(newt_colors)
+  (setsid kitty --class bierstadt-sound --title Sound \
+     -o remember_window_size=no -o initial_window_width=72c -o initial_window_height=24c \
+     "$0" sound-menu >/dev/null 2>&1 &)
+}
+
+# Lines of "name<TAB>description" for sinks or sources, leaving out the
+# monitor sources PipeWire makes for every output.
+sound_list() {
+  pactl -f json list "$1" | jq -r '.[] | select(.name | endswith(".monitor") | not)
+                                  | "\(.name)\t\(.description)"'
+}
+
+sound_menu() {
+  local title="Sound" choice out in name desc items id
+  local -A descs
+  while :; do
+    out=$(pactl get-default-sink) in=$(pactl get-default-source)
+    items=() descs=()
+    while IFS=$'\t' read -r name desc; do
+      descs[$name]=$desc
+      items+=("sink:$name" "Output   $desc$([ "$name" = "$out" ] && echo "   in use")")
+    done < <(sound_list sinks)
+    while IFS=$'\t' read -r name desc; do
+      descs[$name]=$desc
+      items+=("source:$name" "Input    $desc$([ "$name" = "$in" ] && echo "   in use")")
+    done < <(sound_list sources)
+    items+=(mixer "Open the full mixer")
+    choice=$(whiptail --title "$title" --cancel-button Quit --notags \
+      --menu "Output: ${descs[$out]:-none}"$'\n'"Input:  ${descs[$in]:-none}"$'\n\n'"Choose where sound plays and records" \
+      22 66 12 "${items[@]}" 3>&1 1>&2 2>&3) || return 0
+    case "$choice" in
+      mixer)
+        (setsid pavucontrol >/dev/null 2>&1 &)
+        return 0 ;;
+      sink:*)
+        pactl set-default-sink "${choice#sink:}"
+        for id in $(pactl list short sink-inputs | cut -f1); do
+          pactl move-sink-input "$id" "${choice#sink:}" 2>/dev/null || true
+        done ;;
+      source:*)
+        pactl set-default-source "${choice#source:}"
+        for id in $(pactl list short source-outputs | cut -f1); do
+          pactl move-source-output "$id" "${choice#source:}" 2>/dev/null || true
+        done ;;
+    esac
+  done
 }
 
 # btop, the "instruments" behind cpu and mem, in the room's colours. btop
@@ -147,6 +369,10 @@ case "${1:-}" in
   room)        room ;;
   instruments) instruments ;;
   wifi)        wifi ;;
+  bluetooth)   bluetooth ;;
+  bluetooth-menu) bluetooth_menu ;;
+  sound)       sound ;;
+  sound-menu)  sound_menu ;;
   goto)        xdotool set_desktop "${2:?workspace number}" ;;
   workspaces)  workspaces ;;
   volume)      volume ;;
@@ -154,6 +380,7 @@ case "${1:-}" in
   volume-down) pactl set-sink-volume @DEFAULT_SINK@ -5% ;;
   volume-set)  pactl set-sink-volume @DEFAULT_SINK@ "${2%.*}%" ;;
   network)     network ;;
+  bluetooth-now) bluetooth_now ;;
   -h|--help)   usage ;;
   *)           usage; exit 2 ;;
 esac

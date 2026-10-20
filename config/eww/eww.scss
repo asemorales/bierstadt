@@ -26,6 +26,11 @@
   color: $text;
 }
 
+// Icons are symbolic, so they take the colour of the button they sit in.
+.glyph {
+  -gtk-icon-style: symbolic;
+}
+
 .sep {
   color: $mid;
 }

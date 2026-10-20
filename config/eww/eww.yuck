@@ -1,17 +1,25 @@
 ; The Bierstadt bar: a book's running head across the top of the screen.
 ;   left    the date and time, Contents (the applications menu) and the plates
 ;           I-IV, one per workspace
-;   right   cpu, memory, disk, network, a volume slider and battery, in small
-;           caps; Fin. logs out
+;   right   cpu, memory and disk in small caps, then network, bluetooth, a
+;           volume slider and battery as icons from the bierstadt icon theme;
+;           Fin. logs out
 ; Started by `bierstadt-bar start`. Colours: _dark.scss and _light.scss.
 
 (deflisten workspaces :initial "[]" "bierstadt-bar workspaces")
-(deflisten volume     :initial '{"pct":0,"muted":false}' "bierstadt-bar volume")
-(defpoll   network    :interval "10s" "bierstadt-bar network")
+(deflisten volume     :initial '{"pct":0,"muted":false,"out":""}' "bierstadt-bar volume")
+(defpoll   network    :interval "10s" :initial '{"icon":"network-wireless-offline-symbolic","name":""}'
+  "bierstadt-bar network")
+(defpoll   bluetooth  :interval "10s" :initial '{"icon":"bluetooth-disabled-symbolic","tip":""}'
+  "bierstadt-bar bluetooth-now")
 (defpoll   clock      :interval "10s" :initial '{"short":"","long":""}'
   "date '+{\"short\":\"%a %d %b · %H:%M\",\"long\":\"%A %d %B %Y\"}'")
 
 (defwidget sep [] (label :class "sep" :text "·"))
+
+; A symbolic icon from the GTK icon theme (bierstadt or bierstadt-dark, set by
+; bierstadt-mode). GTK draws it in the widget's CSS colour.
+(defwidget glyph [name] (image :class "glyph" :icon name :icon-size "menu"))
 
 (defwidget left []
   (box :class "left" :space-evenly false :halign "start" :spacing 24
@@ -36,17 +44,31 @@
       :text "disk ${round(EWW_DISK['/'].used_perc, 0)}%")
     (sep)
     (button :class "word" :onclick "bierstadt-bar wifi" :onrightclick "nm-connection-editor &"
-            :tooltip "Network. Click to join, right-click for saved connections" network)
+            :tooltip "${network.name}. Click to join, right-click for saved connections"
+      (glyph :name {network.icon}))
+    (button :class "word" :onclick "bierstadt-bar bluetooth"
+            :tooltip "Bluetooth: ${bluetooth.tip}. Click to connect a device"
+      (glyph :name {bluetooth.icon}))
     (sep)
     (eventbox :onscroll "bierstadt-bar volume-{}"
       (box :class "volume" :space-evenly false :spacing 8
-        (button :class "word" :onclick "pactl set-sink-mute @DEFAULT_SINK@ toggle" :tooltip "Click to mute"
-          {volume.muted ? "vol muted" : "vol ${volume.pct}%"})
+        (button :class "word" :onclick "pactl set-sink-mute @DEFAULT_SINK@ toggle" :onrightclick "bierstadt-bar sound"
+                :tooltip "${volume.out}, ${volume.muted ? 'muted' : volume.pct + '%'}. Click to mute, right-click to choose speakers or microphone"
+          (glyph :name {volume.muted || volume.pct == 0 ? "audio-volume-muted-symbolic"
+                        : volume.pct < 34 ? "audio-volume-low-symbolic"
+                        : volume.pct < 67 ? "audio-volume-medium-symbolic"
+                        : "audio-volume-high-symbolic"}))
         (scale :class {volume.muted ? "slider muted" : "slider"} :min 0 :max 101 :value {volume.pct}
                :onchange "bierstadt-bar volume-set {}" :tooltip "Drag or scroll to change")))
     (sep)
-    (label :class "word" :tooltip {EWW_BATTERY.BAT0.status}
-      :text "bat ${EWW_BATTERY.BAT0.capacity}%${EWW_BATTERY.BAT0.status == 'Charging' ? ' +' : ''}")
+    (box :class "word" :space-evenly false :spacing 6 :tooltip {EWW_BATTERY.BAT0.status}
+      (glyph :name {"battery-${EWW_BATTERY.BAT0.capacity >= 90 ? 'full'
+                               : EWW_BATTERY.BAT0.capacity >= 60 ? 'good'
+                               : EWW_BATTERY.BAT0.capacity >= 30 ? 'medium'
+                               : EWW_BATTERY.BAT0.capacity >= 10 ? 'low'
+                               : 'caution'}${EWW_BATTERY.BAT0.status == 'Charging' ? '-charging'
+                               : EWW_BATTERY.BAT0.status == 'Full' ? '-charged' : ''}-symbolic"})
+      (label :text "${EWW_BATTERY.BAT0.capacity}%"))
     (button :class "word fin" :onclick "xfce4-session-logout --halt &" "Fin.")))
 
 (defwidget bar []

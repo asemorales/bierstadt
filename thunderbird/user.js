@@ -14,3 +14,6 @@ user_pref("mailnews.start_page.enabled", false);
 
 // Let xfwm4 draw the title bar, so the window matches the Bierstadt frames.
 user_pref("mail.tabs.drawInTitlebar", false);
+
+// Vertical view: the message preview sits to the right of the message list.
+user_pref("mail.pane_config.dynamic", 2);

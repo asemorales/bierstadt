@@ -19,7 +19,7 @@ CACHE = os.path.expanduser(f"~/.cache/bierstadt/bibata-{TAG}")
 ICONS = os.path.expanduser("~/.local/share/icons")
 DOT_ICONS = os.path.expanduser("~/.icons")
 SIZES = [24, 32, 48, 64, 72, 96]
-SRC = 256  # Bibata draws on a 256px canvas, and hotspots are in those units
+SRC = 256  # Bibata's canvas size, the unit for its hotspots
 
 # Bibata's placeholders: #00FF00 body, #0000FF outline, #FF0000 the watch face.
 SPINNER = ("#32A0DA", "#F05024", "#FCB813", "#7EBA41")

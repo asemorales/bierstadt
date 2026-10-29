@@ -1,6 +1,6 @@
 user_pref("toolkit.legacyUserProfileCustomizations.stylesheets", true);
 
-// A dark or coloured theme would pin the chrome to one look.
+// Under a dark or coloured theme, Firefox draws the chrome the same in both rooms.
 user_pref("extensions.activeThemeID", "default-theme@mozilla.org");
 
 user_pref("browser.tabs.inTitlebar", 0);

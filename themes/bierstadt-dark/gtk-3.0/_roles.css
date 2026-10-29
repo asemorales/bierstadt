@@ -20,7 +20,7 @@
 @define-color g_active        mix(@night_hover, @night_mid, 0.3);
 @define-color g_selected_bg   @night_sel;
 @define-color g_selected_fg   #000000;
-/* Not inverted, so pale icons stay visible on selected rows. */
+/* Inverting would hide pale icons on selected rows. */
 @define-color g_item_sel_bg   @night_frame;
 @define-color g_item_sel_fg   #FFFCF6;
 @define-color g_trough        @night_panel;

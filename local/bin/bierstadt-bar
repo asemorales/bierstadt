@@ -140,7 +140,8 @@ bluetooth() {
      "$0" bluetooth-menu >/dev/null 2>&1 &)
 }
 
-# whiptail clears an --infobox before a slow call ends. A --gauge stays up while fd 4 is open.
+# whiptail clears an --infobox as soon as the next slow call starts, but it
+# shows a --gauge until fd 4 closes.
 bt_gauge() { exec 4> >(whiptail --title Bluetooth --gauge "$1" 8 60 0); gauge=$!; }
 bt_step()  { printf 'XXX\n%s\n%s\nXXX\n' "$1" "$2" >&4; }
 bt_close() { exec 4>&-; wait "$gauge" 2>/dev/null || true; }
@@ -315,7 +316,7 @@ instruments() {
 start() {
   command -v eww >/dev/null || { echo "bierstadt-bar: eww is not installed" >&2; exit 1; }
   room
-  # With no panel running, --quit pops up a "No running instance" dialog.
+  # Without a running panel, xfce4-panel --quit shows a "No running instance" dialog.
   if pgrep -x xfce4-panel >/dev/null; then xfce4-panel --quit 2>/dev/null || true; fi
   eww daemon 2>/dev/null || true
   eww open bar

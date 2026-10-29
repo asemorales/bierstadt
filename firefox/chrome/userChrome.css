@@ -1,6 +1,6 @@
 /* Firefox 140 colours its chrome from the tokens in
- * browser/themes/shared/browser-colors.css. light-dark() follows the desktop,
- * so it needs the default "System theme". */
+ * browser/themes/shared/browser-colors.css. light-dark() uses the desktop's
+ * colour scheme only under the default "System theme". */
 
 :root {
   --toolbox-bgcolor:          light-dark(#ECE5D5, #25211C) !important;

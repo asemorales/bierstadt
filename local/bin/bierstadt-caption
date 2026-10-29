@@ -8,8 +8,8 @@
 #   bierstadt-caption stop
 #   bierstadt-caption restart
 #
-# Conky asks for line1/line2 every two seconds, so the label follows
-# workspace changes and bierstadt-mode switches on its own.
+# Conky asks for line1 and line2 every two seconds, so Conky updates the label
+# after workspace changes and bierstadt-mode switches.
 
 set -euo pipefail
 

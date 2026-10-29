@@ -3,9 +3,9 @@
 
     python3 -I grub-build.py dark|light PAINTING "CAPTION" OUT_DIR
 
-GRUB cannot draw rounded corners, shadows or letter-spacing, so the card and
-the static text are painted into the background. GRUB fonts are fixed bitmaps,
-so the theme is drawn at the panel's native 4K.
+GRUB cannot draw rounded corners, shadows or letter-spacing, so this script
+paints the card and the static text into the background. GRUB fonts are fixed
+bitmaps, so the script draws the theme at the panel's native 4K.
 """
 import os
 import subprocess
@@ -59,7 +59,7 @@ ITEM_H = px(44)
 
 
 def font(path, size, weight=None):
-    """`size` in points; the optical size stays at the point size."""
+    """`size` is in points. The optical size matches the point size."""
     f = ImageFont.truetype(path, px(size))
     if weight is not None:
         try:
@@ -202,7 +202,7 @@ def main():
     pill(os.path.join(out, "select"), c["sel_bg"], px(48), px(48), px(8))
     terminal_box(os.path.join(out, "terminal_box"), c)
 
-    # GRUB fonts are bitmaps at a fixed pixel size, but the names keep the point size.
+    # GRUB fonts are bitmaps at a fixed pixel size, but their names use the point size.
     term = mkfont(os.path.join(out, "dm-mono-16.pf2"), KITTY_MONO, px(16), "Bierstadt DM Mono 16")
     item = mkfont(os.path.join(out, "dm-mono-18.pf2"), KITTY_MONO, px(18), "Bierstadt DM Mono 18")
     sel = mkfont(os.path.join(out, "dm-mono-medium-18.pf2"), KITTY_MONO_MEDIUM, px(18),

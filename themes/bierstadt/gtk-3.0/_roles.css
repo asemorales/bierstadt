@@ -20,7 +20,7 @@
 @define-color g_active        alpha(@ink, 0.11);
 @define-color g_selected_bg   @ink;
 @define-color g_selected_fg   @paper;
-/* Stone instead of the inverted ink, so dark icons stay readable on selected rows. */
+/* Inverted ink would hide dark icons on selected rows. */
 @define-color g_item_sel_bg   @stone;
 @define-color g_item_sel_fg   @ink;
 @define-color g_trough        @stone;

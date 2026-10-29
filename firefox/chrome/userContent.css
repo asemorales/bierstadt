@@ -1,6 +1,6 @@
 /* bierstadt-mode fills in this template and writes it to
- * <profile>/chrome/userContent.css, because the new tab page cannot read a
- * file next to a symlinked sheet.
+ * <profile>/chrome/userContent.css, because Firefox does not load files next to
+ * a symlinked sheet on the new tab page.
  *
  *   @PAINTING@   data: URL of the painting
  *   @LABEL@      ARTIST · TITLE · YEAR

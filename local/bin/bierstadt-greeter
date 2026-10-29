@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # The greeter runs as the lightdm user, which cannot read ~/.themes or
-# ~/.local, so everything is copied under /usr/local/share.
+# ~/.local, so this script copies everything under /usr/local/share.
 
 set -euo pipefail
 

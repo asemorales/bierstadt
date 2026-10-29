@@ -1,4 +1,4 @@
-/* User sheets lose to Thunderbird's own declarations without !important. */
+/* Thunderbird applies its own declarations over user sheets without !important. */
 
 @media (prefers-color-scheme: light) {
   :root {
@@ -90,8 +90,8 @@
   --folder-color-folder-filter: var(--layout-color-2) !important;
   --folder-color-folder-rss: var(--layout-color-2) !important;
 
-  /* Thunderbird gives the four-pointed star only to "new" mail, and unread
-     mail falls back to a dot once that flag clears. */
+  /* Thunderbird shows the four-pointed star only on "new" mail. Once it clears
+     that flag, it marks unread mail with a dot. */
   --read-status-icon: var(--read-status-new) !important;
 
   --tabs-toolbar-background-color: transparent !important;

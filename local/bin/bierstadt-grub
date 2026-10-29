@@ -52,7 +52,8 @@ sed -i -E '/^(export )?GRUB_(MENU_PICTURE|COLOR_NORMAL|COLOR_HIGHLIGHT)=/d' "$tm
 sudo install -m644 "$tmp" "$CONF"
 rm -f "$tmp"
 
-# background_color drops any background_image from 05_debian_theme, and gfxterm paints black text cells in it.
+# GRUB ignores any background_image from 05_debian_theme once background_color is set,
+# and gfxterm paints black text cells in it.
 if [ "$mode" = dark ]; then
   bg="#191612"; normal=light-gray/black; highlight=black/light-gray
 else

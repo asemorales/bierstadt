@@ -86,7 +86,7 @@ xfconf-query -c xfwm4 -p /general/workspace_names -n -t string -s I -t string -s
 set_prop xfce4-keyboard-shortcuts "/commands/custom/<Super>k" string kitty
 set_prop xfce4-keyboard-shortcuts "/commands/custom/<Super>o" string obsidian
 
-# The GTK theme styles the panel plugins by id, so the ids matter.
+# The GTK theme styles the panel plugins by id, so keep these plugin ids.
 P=xfce4-panel
 xfconf-query -c $P -p /panels -r -R 2>/dev/null || true
 xfconf-query -c $P -p /plugins -r -R 2>/dev/null || true

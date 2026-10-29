@@ -58,8 +58,8 @@ wall_sprite = Sprite(pic);
 wall_sprite.SetX(Window.GetX() + Math.Int((w - pic.GetWidth()) / 2));
 wall_sprite.SetY(Window.GetY() + Math.Int((h - pic.GetHeight()) / 2));
 wall_sprite.SetZ(0);
-# No fade-in: Plymouth blends in software, and fading a full 4K frame keeps
-# it busy for ~10s, holding up every boot step that has to talk to it.
+# No fade-in. Plymouth blends in software and takes about 10s to fade a full
+# 4K frame. Every boot step that talks to Plymouth waits for it.
 
 line = Image("line.png");
 line_sprite = Sprite();
@@ -132,9 +132,9 @@ if ! grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bsplash\b' "$CONF"; then
   sudo update-grub
 fi
 
-# Quitting Plymouth normally shows the text console, the boot log and a getty
-# login prompt until X is up. X takes vt1 with no background of its own
-# instead, so the painting stays until the greeter draws.
+# When Plymouth quits normally, the system shows the text console, the boot log
+# and a getty login prompt until X starts. Instead, X takes over vt1 without
+# drawing a background, so the screen shows the painting until the greeter draws.
 sudo tee /usr/local/sbin/bierstadt-splash-handoff >/dev/null <<'EOF'
 #!/bin/sh
 # Written by bierstadt-plymouth. Edit that script instead.

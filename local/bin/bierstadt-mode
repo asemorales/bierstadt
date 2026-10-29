@@ -9,8 +9,8 @@
 #
 # Changes the GTK theme, xfwm4 theme, icons, cursor, panel (through the GTK theme),
 # notifications, terminal colours (Xfce Terminal and Kitty), wallpapers,
-# the caption and the eww bar together. Yazi follows Kitty on its next start,
-# and Firefox's new tab painting on its next start.
+# the caption and the eww bar together. Yazi and Firefox's new tab change on
+# their next start.
 # Which paintings hang where: ~/.config/bierstadt/wall.yml
 
 set -euo pipefail

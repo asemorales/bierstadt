@@ -1,4 +1,4 @@
-/* Uses only the g_* roles from _roles.css, so each variant changes only its roles. */
+/* Only g_* roles from _roles.css, so a variant redefines just its roles. */
 
 * {
   outline-color: @g_accent;
@@ -478,7 +478,7 @@ switch:checked:backdrop slider {
   background-color: @g_knob;
   box-shadow: none;
 }
-/* GTK sizes the switch from its on/off icons, so take them out of the measure */
+/* GTK sizes the switch from its on and off icons, so hide them and zero their size. */
 switch image {
   color: transparent;
   -gtk-icon-source: none;

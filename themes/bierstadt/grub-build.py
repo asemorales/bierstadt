@@ -1,20 +1,11 @@
 #!/usr/bin/env python3
-"""Build the Bierstadt GRUB theme for one room, to match the login screen.
+"""Build the Bierstadt GRUB theme for one room.
 
     python3 -I grub-build.py dark|light PAINTING "CAPTION" OUT_DIR
 
-The boot menu is the greeter's login card: the painting fills the screen, a
-rounded card with a hairline frame and soft shadow hangs at 20% across, and
-the wall label sits in the bottom-left corner as on the desktop. GRUB cannot
-draw rounded corners, shadows or letter-spacing, so the card, the static text
-and the wall label are painted into the background. GRUB draws only the menu,
-the countdown and the selection pill on top.
-
-Everything is laid out in 1920x1080 points and drawn at S pixels per point.
-The laptop's firmware only offers the panel's native 3840x2160, so S is 2 and
-GRUB runs at 4K: GRUB fonts are fixed bitmaps, so a 1080p theme stretched to
-4K leaves the text half size. Positions are percentages, so the layout still
-lines up if the firmware picks another mode.
+GRUB cannot draw rounded corners, shadows or letter-spacing, so the card and
+the static text are painted into the background. GRUB fonts are fixed bitmaps,
+so the theme is drawn at the panel's native 4K.
 """
 import os
 import subprocess
@@ -22,7 +13,7 @@ import sys
 
 from PIL import Image, ImageDraw, ImageFilter, ImageFont
 
-S = 2                      # pixels per point; 2 for the 4K panel
+S = 2                      # pixels per point
 W, H = 1920 * S, 1080 * S
 
 
@@ -34,10 +25,9 @@ FONTS = os.path.expanduser("~/.local/share/fonts/bierstadt")
 SERIF = os.path.join(FONTS, "SourceSerif4[opsz,wght].ttf")
 MONO = os.path.join(FONTS, "IBMPlexMono-Regular.ttf")
 MONO_MEDIUM = os.path.join(FONTS, "IBMPlexMono-Medium.ttf")
-KITTY_MONO = os.path.join(FONTS, "DMMono-Regular.ttf")   # kitty's font_family
+KITTY_MONO = os.path.join(FONTS, "DMMono-Regular.ttf")
 KITTY_MONO_MEDIUM = os.path.join(FONTS, "DMMono-Medium.ttf")
 
-# The two rooms, from gtk-3.0/_palette.css and _roles.css
 ROOMS = {
     "dark": dict(
         card="#191612", frame="#615950", rule="#4D463E", fg="#F2EDE4",
@@ -58,7 +48,6 @@ CARD_X, CARD_Y = round(W * 0.20 - CARD_W / 2), (H - CARD_H) // 2
 RADIUS = px(14)
 PAD = px(44)
 
-# Inside the card, top to bottom
 KICKER_Y = CARD_Y + PAD
 HEAD_Y = KICKER_Y + px(30)
 RULE1_Y = HEAD_Y + px(62)
@@ -116,7 +105,6 @@ def shadow(canvas, box, radius, blur, dy, alpha):
 def background(room, painting, caption):
     c = ROOMS[room]
     img = Image.open(painting).convert("RGB")
-    # Cover-crop to 16:9, then scale to the boot resolution
     iw, ih = img.size
     if iw / ih > W / H:
         nw = round(ih * W / H)
@@ -126,7 +114,6 @@ def background(room, painting, caption):
         img = img.crop((0, (ih - nh) // 2, iw, (ih - nh) // 2 + nh))
     bg = img.resize((W, H), Image.LANCZOS).convert("RGBA")
 
-    # Card: 0 2px 4px and 0 12px 32px shadows, a 1px frame, then the fill
     box = (CARD_X, CARD_Y, CARD_X + CARD_W, CARD_Y + CARD_H)
     bg = shadow(bg, box, RADIUS, px(2), px(2), 64)
     bg = shadow(bg, box, RADIUS, px(16), px(12), 102)
@@ -142,7 +129,6 @@ def background(room, painting, caption):
     d.text((x, FOOT_Y + px(24)), "↑↓ choose   enter start   e edit   c console",
            font=font(MONO, 14), fill=c["dim"])
 
-    # Wall label, as bierstadt-caption draws it (in points: the desktop runs at 2x)
     if caption:
         f = font(MONO_MEDIUM, 11)
         tw = sum(d.textlength(ch, font=f) + px(1.2) for ch in caption)
@@ -174,7 +160,7 @@ def terminal_box(path, c):
     shadow, the hairline frame and the padding. The text area itself is filled
     by gfxterm with kitty's background (06_bierstadt sets background_color)."""
     r = px(40)                 # slice size: shadow margin + padding
-    m = px(16)                 # shadow margin; the card's edge sits r - m outside the text
+    m = px(16)                 # shadow margin
     size = 3 * r
     img = Image.new("RGBA", (size, size), (0, 0, 0, 0))
     box = (m, m, size - m, size - m)
@@ -211,13 +197,12 @@ def main():
     room, painting, caption, out = sys.argv[1:5]
     c = ROOMS[room]
     os.makedirs(out, exist_ok=True)
-    # JPEG: a 4K PNG is ~10 MB and GRUB takes seconds to decode it
+    # JPEG, because GRUB takes seconds to decode a 10 MB 4K PNG
     background(room, painting, caption).save(os.path.join(out, "background.jpg"), quality=92)
     pill(os.path.join(out, "select"), c["sel_bg"], px(48), px(48), px(8))
     terminal_box(os.path.join(out, "terminal_box"), c)
 
-    # GRUB fonts are bitmaps at a fixed pixel size; the names keep the point size.
-    # The systems and the console/editor are in kitty's DM Mono, like the hostname.
+    # GRUB fonts are bitmaps at a fixed pixel size, but the names keep the point size.
     term = mkfont(os.path.join(out, "dm-mono-16.pf2"), KITTY_MONO, px(16), "Bierstadt DM Mono 16")
     item = mkfont(os.path.join(out, "dm-mono-18.pf2"), KITTY_MONO, px(18), "Bierstadt DM Mono 18")
     sel = mkfont(os.path.join(out, "dm-mono-medium-18.pf2"), KITTY_MONO_MEDIUM, px(18),
@@ -225,7 +210,7 @@ def main():
     label = mkfont(os.path.join(out, "mono-14.pf2"), MONO, px(14), "Bierstadt Mono 14")
 
     inner_x, inner_w = CARD_X + PAD - px(14), CARD_W - 2 * PAD + px(28)
-    theme = f"""# Bierstadt GRUB theme ({room} room). Generated by grub-build.py; edit that, not this.
+    theme = f"""# Bierstadt GRUB theme ({room} room). Generated by grub-build.py. Edit that script instead.
 
 title-text: ""
 desktop-image: "background.jpg"

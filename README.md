@@ -37,15 +37,15 @@
 | splash | [Plymouth](https://www.freedesktop.org/wiki/Software/Plymouth/) |
 | bootloader | [GRUB](https://www.gnu.org/software/grub/) |
 | fonts | [Source Serif 4](https://fonts.google.com/specimen/Source+Serif+4), [Newsreader](https://fonts.google.com/specimen/Newsreader), [Inter](https://rsms.me/inter/), [DM Mono](https://fonts.google.com/specimen/DM+Mono), [IBM Plex Mono](https://fonts.google.com/specimen/IBM+Plex+Mono) |
-| bg / dark | Bierstadt · *Among the Sierra Nevada, California* · 1868 |
-| | Bierstadt · *The Rocky Mountains, Lander's Peak* · 1863 |
-| | Bierstadt · *Valley of the Yosemite* · 1864 |
-| | Bierstadt · *Rocky Mountain Landscape* · 1870 |
-| bg / light | Monet · *Cliff Walk at Pourville* · 1882 |
-| | Mønsted · *Summer Day by a Stream* · 1906 |
-| | Polenov · *Moscow Courtyard* · 1878 |
-| | Kuindzhi · *Birch Grove* · 1879 |
-| bg / login | Bierstadt · *Lake Lucerne* · 1858 |
+| bg / dark | Bierstadt, *Among the Sierra Nevada, California* (1868) |
+| | Bierstadt, *The Rocky Mountains, Lander's Peak* (1863) |
+| | Bierstadt, *Valley of the Yosemite* (1864) |
+| | Bierstadt, *Rocky Mountain Landscape* (1870) |
+| bg / light | Monet, *Cliff Walk at Pourville* (1882) |
+| | Mønsted, *Summer Day by a Stream* (1906) |
+| | Polenov, *Moscow Courtyard* (1878) |
+| | Kuindzhi, *Birch Grove* (1879) |
+| bg / login | Bierstadt, *Lake Lucerne* (1858) |
 
 ## Commands
 

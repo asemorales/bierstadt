@@ -1,8 +1,5 @@
--- Bierstadt colour scheme, after the bierstadt and bierstadt-dark desktop themes.
--- The greys come from themes/bierstadt/gtk-3.0/_palette.css and the few hues
--- from the terminal palettes in bierstadt-mode. Like the desktop, the screen
--- stays mostly ink on paper: hues mark strings, numbers and diagnostics only.
--- Follows `background`: dark is the dark room, light the paper room.
+-- Greys from themes/bierstadt/gtk-3.0/_palette.css, hues from the terminal
+-- palettes in bierstadt-mode.
 
 vim.cmd("highlight clear")
 if vim.fn.exists("syntax_on") == 1 then vim.cmd("syntax reset") end
@@ -30,7 +27,6 @@ local rooms = {
 local c = rooms[vim.o.background] or rooms.dark
 
 local groups = {
-  -- Editor chrome
   Normal       = { fg = c.fg, bg = c.bg },
   NormalFloat  = { fg = c.fg, bg = c.panel },
   FloatBorder  = { fg = c.frame, bg = c.panel },
@@ -80,7 +76,6 @@ local groups = {
   SpellRare    = { sp = c.magenta, undercurl = true },
   SpellLocal   = { sp = c.cyan, undercurl = true },
 
-  -- Syntax: mostly ink, with emphasis carried by weight and slant
   Comment      = { fg = c.dim, italic = true },
   Constant     = { fg = c.magenta },
   String       = { fg = c.green },
@@ -101,7 +96,6 @@ local groups = {
   Error        = { fg = c.red },
   Todo         = { fg = c.bg, bg = c.yellow, bold = true },
 
-  -- Diffs and git
   DiffAdd      = { bg = c.add },
   DiffDelete   = { fg = c.red, bg = c.del },
   DiffChange   = { bg = c.chg },
@@ -110,7 +104,6 @@ local groups = {
   diffRemoved  = { fg = c.red },
   diffChanged  = { fg = c.yellow },
 
-  -- Diagnostics
   DiagnosticError = { fg = c.red },
   DiagnosticWarn  = { fg = c.yellow },
   DiagnosticInfo  = { fg = c.blue },
@@ -120,7 +113,6 @@ local groups = {
   DiagnosticUnderlineInfo  = { sp = c.blue, undercurl = true },
   DiagnosticUnderlineHint  = { sp = c.cyan, undercurl = true },
 
-  -- Markdown, which reads like the website
   markdownH1         = { fg = c.bright, bold = true },
   markdownH2         = { fg = c.bright, bold = true },
   markdownHeadingDelimiter = { fg = c.mid },
@@ -136,7 +128,6 @@ for name, spec in pairs(groups) do
   vim.api.nvim_set_hl(0, name, spec)
 end
 
--- The built-in :terminal uses the same ANSI colours as Xfce Terminal.
 local term = {
   dark = { "#100D0A", "#D0704F", "#9DB07A", "#D9B46A", "#7FA3C2", "#B98AA2", "#86B5AE", "#E3D8C4",
            "#978A79", "#E08A6B", "#B3C496", "#E6C88A", "#9DBAD3", "#CDA4B8", "#A3C9C3", "#EFE6D6" },

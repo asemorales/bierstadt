@@ -1,6 +1,4 @@
-# The parts both rooms share. Colours live in the two flavors, and Yazi picks
-# one on start from the terminal's background, so it follows bierstadt-mode
-# through Kitty. An open Yazi keeps its room until you restart it.
+# Yazi picks a flavor from the terminal's background on start only.
 
 #:schema https://yazi-rs.github.io/schemas/theme.json
 
@@ -25,7 +23,7 @@ separator = "  "
 [confirm]
 btn_labels = [ "  Yes  ", "  No  " ]
 
-# No icons: there is no Nerd Font here, and like gwern.net the page is text.
+# No Nerd Font is installed.
 [notify]
 icon_info  = ""
 icon_warn  = ""

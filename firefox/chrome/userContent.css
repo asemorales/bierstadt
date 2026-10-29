@@ -1,10 +1,6 @@
-/* Bierstadt for Firefox's new tab page: the room's first painting, hung edge
- * to edge, with the search box resting on it like a museum label.
- *
- * This is a template. bierstadt-mode fills in the painting and label and
- * writes the result to <profile>/chrome/userContent.css, because the new tab
- * page cannot read a file next to a symlinked sheet. The painting goes in as
- * a data: URL, which the page's security policy allows.
+/* bierstadt-mode fills in this template and writes it to
+ * <profile>/chrome/userContent.css, because the new tab page cannot read a
+ * file next to a symlinked sheet.
  *
  *   @PAINTING@   data: URL of the painting
  *   @LABEL@      ARTIST · TITLE · YEAR
@@ -16,13 +12,11 @@
     --newtab-background-color: transparent !important;
   }
 
-  /* No Firefox logo. The painting is the page. */
   .logo-and-wordmark-wrapper,
   .logo-and-wordmark {
     display: none !important;
   }
 
-  /* The search box: page-coloured and softly translucent, with a round edge. */
   .search-wrapper .search-handoff-button,
   .search-wrapper input {
     background-color: color-mix(in srgb, @PAGE@ 88%, transparent) !important;
@@ -36,13 +30,11 @@
     color: @DIM@ !important;
   }
 
-  /* The settings cog stays, but quiet. */
   .personalize-button {
     background-color: color-mix(in srgb, @PAGE@ 70%, transparent) !important;
     fill: @DIM@ !important;
   }
 
-  /* The label in serif small caps, bottom left, like the desktop caption. */
   body::after {
     content: "@LABEL@";
     position: fixed;

@@ -1,10 +1,6 @@
 #!/usr/bin/env python3
 """Build the bierstadt and bierstadt-dark icon themes from Suru++-Asprómauros.
 
-Every colour in every SVG is moved onto the Bierstadt palette:
-  - the pale glyph colour becomes ink (Bierstadt) or paper (bierstadt-dark)
-  - every other colour becomes a grey of the same lightness, like gwern.net
-
 Run again after changing a colour:
 
     python3 -I ~/.local/share/icons/bierstadt-icons-build.py
@@ -41,11 +37,7 @@ def mix(a, b, t):
     return hexc(x + (y - x) * t for x, y in zip(a, b))
 
 
-# Like gwern.net, no colour in the chrome: every icon becomes a grey of the
-# same lightness, from ink to paper (light) or near-black to off-white (dark).
 VARIANTS = {
-    # Glyphs sit a step back from the text colour, so icons read like the
-    # small figures in a book's margin rather than lit buttons.
     "bierstadt": dict(glyph=mix(PAPER, INK, 0.78), highlight=mix(PAPER, INK, 0.45),
                     dark=INK, light=PAPER),
     "bierstadt-dark": dict(glyph=NIGHT_SEL, highlight="#9E958A",
@@ -68,7 +60,7 @@ def remap(h, v, cache):
     else:
         r, g, b = (x / 255 for x in rgb(key))
         _, light, _ = colorsys.rgb_to_hls(r, g, b)
-        out = mix(v["dark"], v["light"], light)   # greyscale at the same lightness
+        out = mix(v["dark"], v["light"], light)
     cache[key] = out
     return out
 

@@ -1,19 +1,4 @@
 #!/usr/bin/env bash
-# bierstadt-plymouth: dress the boot splash (Plymouth) in the current room, between
-# the boot menu and the login screen.
-#
-#   bierstadt-plymouth    build the theme from the first painting of the room,
-#                       install it to /usr/share/plymouth/themes/bierstadt, make
-#                       it the default, rebuild the initramfs, and add `splash`
-#                       to the kernel command line (asks for sudo)
-#
-# The splash is the painting alone, on the room's wall colour, with a hairline
-# along the bottom for progress. No caption. It is the same
-# painting as the boot menu and the login screen, so the three read as one.
-# Run it again after `bierstadt-mode light|dark`, alongside bierstadt-grub and
-# bierstadt-greeter. It also keeps the painting up through the hand-off to the
-# login screen. The first /etc/default/grub is kept as
-# /etc/default/grub.pre-bierstadt.
 
 set -euo pipefail
 
@@ -28,23 +13,20 @@ DEFAULT_MODE=dark
 mode=$(cat "$STATE_DIR/mode" 2>/dev/null || echo "$DEFAULT_MODE")
 key=$(head -n 1 "$DATA_DIR/room-$mode")
 painting=$(awk -F'\t' -v k="$key" '$1 == k { print $2 }' "$TSV")
-[ -s "$painting" ] || { echo "no painting for $key; run bierstadt-mode data" >&2; exit 1; }
+[ -s "$painting" ] || { echo "no painting for $key. Run bierstadt-mode data" >&2; exit 1; }
 
-# Wall colour (0-1 floats for Plymouth) and the hairline, per room.
 if [ "$mode" = dark ]; then
-  wall="0.098, 0.086, 0.071"; line="#E3D8C4"     # night #191612, cream
+  wall="0.098, 0.086, 0.071"; line="#E3D8C4"
   ink="0.890, 0.847, 0.769"
-  label="0.620, 0.584, 0.541"; plate="#191612"   # the caption's text and plate
+  label="0.620, 0.584, 0.541"; plate="#191612"
 else
-  wall="0.949, 0.925, 0.875"; line="#231A15"     # paper #F2ECDF, ink
+  wall="0.949, 0.925, 0.875"; line="#231A15"
   ink="0.137, 0.102, 0.082"
   label="0.435, 0.396, 0.376"; plate="#F2ECDF"
 fi
 
 rm -rf "$OUT"
 mkdir -p "$OUT"
-# Plymouth reads PNG only, and the initramfs carries it, so 1920 wide is
-# enough; the script scales it to the screen.
 convert "$painting" -resize 1920x1080 -strip "$OUT/painting.png"
 convert -size 1x1 "xc:$line" "$OUT/line.png"
 convert -size 1x1 "xc:$plate" "$OUT/plate.png"
@@ -61,7 +43,7 @@ ScriptFile=$DEST/bierstadt.script
 EOF
 
 cat > "$OUT/bierstadt.script" <<EOF
-# Bierstadt boot splash. Written by bierstadt-plymouth; edit that instead.
+# Bierstadt boot splash. Written by bierstadt-plymouth. Edit that script instead.
 
 Window.SetBackgroundTopColor($wall);
 Window.SetBackgroundBottomColor($wall);
@@ -69,7 +51,6 @@ Window.SetBackgroundBottomColor($wall);
 w = Window.GetWidth();
 h = Window.GetHeight();
 
-# Cover the screen, cutting any overflow evenly.
 painting = Image("painting.png");
 scale = Math.Max(w / painting.GetWidth(), h / painting.GetHeight());
 pic = painting.Scale(Math.Int(painting.GetWidth() * scale), Math.Int(painting.GetHeight() * scale));
@@ -80,7 +61,6 @@ wall_sprite.SetZ(0);
 # No fade-in: Plymouth blends in software, and fading a full 4K frame keeps
 # it busy for ~10s, holding up every boot step that has to talk to it.
 
-# Progress: a hairline drawn along the bottom edge.
 line = Image("line.png");
 line_sprite = Sprite();
 line_sprite.SetZ(10);
@@ -94,10 +74,6 @@ fun progress(duration, fraction) {
 }
 Plymouth.SetBootProgressFunction(progress);
 
-# Status: the unit systemd is starting, small, just above the hairline, so a
-# boot that hangs shows where. Messages (fsck and the like) use the same line.
-# It sits on a plate like the painting's wall label: the wall colour at 85%.
-# Esc swaps the splash for the full text log and back.
 plate = Image("plate.png");
 plate_sprite = Sprite();
 plate_sprite.SetZ(14);
@@ -126,8 +102,6 @@ fun show_status(text) {
 Plymouth.SetUpdateStatusFunction(show_status);
 Plymouth.SetMessageFunction(show_status);
 
-# Disk passwords, should one ever be asked for: the prompt and a row of dots,
-# centred low on the painting.
 prompt_sprite = Sprite();
 prompt_sprite.SetZ(20);
 
@@ -152,23 +126,18 @@ sudo install -d "$DEST"
 sudo install -m644 "$OUT"/* "$DEST/"
 sudo plymouth-set-default-theme bierstadt
 
-# Plymouth only shows with `splash` on the kernel command line.
 [ -e "$CONF.pre-bierstadt" ] || sudo cp -p "$CONF" "$CONF.pre-bierstadt"
 if ! grep -qE '^GRUB_CMDLINE_LINUX_DEFAULT=.*\bsplash\b' "$CONF"; then
   sudo sed -i -E 's/^(GRUB_CMDLINE_LINUX_DEFAULT="[^"]*)"/\1 splash"/; s/^(GRUB_CMDLINE_LINUX_DEFAULT=") /\1/' "$CONF"
   sudo update-grub
 fi
 
-# Hand-off to the login screen. Left alone, Plymouth quits back to the text
-# console and the boot log shows until X is up. Instead: blank tty1 while it
-# is still hidden, quit leaving the painting on screen, and start X with no
-# background of its own, so the painting stays until the greeter draws.
-# X runs on vt1, the splash's own console, so there is no VT switch, and no
-# getty takes tty1: quitting Plymouth would otherwise start one there, and its
-# login prompt shows until X is up. Ctrl+Alt+F2 and on still give text logins.
+# Quitting Plymouth normally shows the text console, the boot log and a getty
+# login prompt until X is up. X takes vt1 with no background of its own
+# instead, so the painting stays until the greeter draws.
 sudo tee /usr/local/sbin/bierstadt-splash-handoff >/dev/null <<'EOF'
 #!/bin/sh
-# Written by bierstadt-plymouth; edit that instead.
+# Written by bierstadt-plymouth. Edit that script instead.
 printf '\033[2J\033[3J\033[H' > /dev/tty1
 plymouth quit --retain-splash
 EOF

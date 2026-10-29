@@ -24,7 +24,7 @@ set -euo pipefail
 EWW_DIR="$HOME/.config/eww"
 STATE_DIR="$HOME/.local/state/bierstadt"
 TSV="$HOME/.local/share/bierstadt/paintings.tsv"
-export PATH="$HOME/.local/bin:$PATH"   # eww runs bierstadt-bar, bierstadt-mode and itself by name
+export PATH="$HOME/.local/bin:$PATH"
 
 usage() { sed -n '2,18p' "$0" | sed 's/^# \{0,1\}//'; }
 
@@ -37,7 +37,6 @@ room() {
 
 root_prop() { xprop -root "$1" | awk '{ print $NF }'; }
 
-# The painting that hangs on workspace N, for the plate's tooltip.
 painting() {
   local set key
   mapfile -t set < "$STATE_DIR/set" 2>/dev/null || return 0
@@ -63,7 +62,6 @@ workspaces() {
   done
 }
 
-# {"pct":40,"muted":false}, for the slider and its label.
 volume_now() {
   local pct out muted=false
   pct=$(pactl get-sink-volume @DEFAULT_SINK@ | grep -o '[0-9]*%' | head -1 | tr -d %)
@@ -77,9 +75,6 @@ volume() {
   pactl subscribe | grep --line-buffered -e "on sink" -e "on server" | while read -r _; do volume_now; done
 }
 
-# {"icon":"network-wireless-signal-good-symbolic","name":"home"}. The bar's
-# icons are symbolic ones from the bierstadt icon theme, so GTK draws them in
-# the bar's text colour and they follow the room.
 network() {
   local type name signal icon
   IFS=: read -r type name < <(nmcli -t -f TYPE,STATE,CONNECTION dev 2>/dev/null \
@@ -99,9 +94,6 @@ network() {
   jq -nc --arg icon "$icon" --arg name "$name" '{icon: $icon, name: $name}'
 }
 
-# newt (the toolkit behind nmtui and whiptail) takes hex colours when
-# COLORTERM=truecolor, so its windows are dressed in the current room's eww
-# palette instead of their blue and red.
 newt_colors() {
   local scss page panel rule frame mid dim text
   scss="$EWW_DIR/_$(bierstadt-mode status 2>/dev/null || echo dark).scss"
@@ -118,9 +110,6 @@ newt_colors() {
     emptyscale=,$rule fullscale=,$text"
 }
 
-# nmtui's network list: everything in range, saved or not, with a password
-# prompt for new ones. nm-connection-editor only lists saved connections, so it
-# stays on right-click. A second click closes the window.
 wifi() {
   if pkill -f "^kitty --class bierstadt-wifi" 2>/dev/null; then return 0; fi
   nmcli dev wifi rescan >/dev/null 2>&1 || true
@@ -131,7 +120,6 @@ wifi() {
      nmtui connect >/dev/null 2>&1 &)
 }
 
-# {"icon":"bluetooth-active-symbolic","tip":"Galaxy Buds"}.
 bluetooth_now() {
   local icon=bluetooth-active-symbolic tip
   if ! bluetoothctl show 2>/dev/null | grep -q "Powered: yes"; then
@@ -143,11 +131,6 @@ bluetooth_now() {
   jq -nc --arg icon "$icon" --arg tip "$tip" '{icon: $icon, tip: $tip}'
 }
 
-# There is no nmtui for Bluetooth, so this is one in whiptail (also newt):
-# scan, then list every named device in range or already paired. Choosing one
-# pairs, trusts and connects it, or disconnects it if it is connected. Devices
-# that only show an address (stray LE beacons, or earbuds not yet in pairing
-# mode) are left out. A second click on the bar closes the window.
 bluetooth() {
   if pkill -f "^kitty --class bierstadt-bluetooth" 2>/dev/null; then return 0; fi
   local -x COLORTERM=truecolor NEWT_COLORS
@@ -157,15 +140,12 @@ bluetooth() {
      "$0" bluetooth-menu >/dev/null 2>&1 &)
 }
 
-# whiptail clears the screen when a dialog exits, so an --infobox vanishes
-# the moment the slow bluetoothctl call behind it starts. A --gauge stays up
-# for as long as fd 4 is open, so the waits below say what is happening.
+# whiptail clears an --infobox before a slow call ends. A --gauge stays up while fd 4 is open.
 bt_gauge() { exec 4> >(whiptail --title Bluetooth --gauge "$1" 8 60 0); gauge=$!; }
 bt_step()  { printf 'XXX\n%s\n%s\nXXX\n' "$1" "$2" >&4; }
 bt_close() { exec 4>&-; wait "$gauge" 2>/dev/null || true; }
 
-# bt_run FROM TO TEXT CMD...: run CMD in the background, creeping the gauge
-# from FROM towards TO until it ends. Its output is left in $tmp.
+# bt_run FROM TO TEXT CMD...
 bt_run() {
   local pct=$1 to=$2 text=$3 pid; shift 3
   "$@" >"$tmp" 2>&1 &
@@ -178,9 +158,6 @@ bt_run() {
   wait "$pid"
 }
 
-# The scan runs in the background for as long as the window is open, so the
-# menu shows paired devices at once and "Look again" picks up new ones. The
-# top of the menu says what is connected, with the battery when it is known.
 bluetooth_menu() {
   local title="Bluetooth" choice mac name info status battery items devices line scan gauge tmp i n
   local -A names
@@ -213,9 +190,7 @@ bluetooth_menu() {
         name="$name   connected"
       elif grep -q "Paired: yes" <<<"$info"; then name="$name   paired"
       fi
-      # Audio over LE only (Audio Stream Control, no Audio Sink) is LE Audio,
-      # which Debian 12's PipeWire cannot play to. Earbuds that do both show
-      # up again under their classic address once in pairing mode.
+      # LE Audio only. Debian 12's PipeWire cannot play to it.
       if grep -q 0000184e <<<"$info" && ! grep -q 0000110b <<<"$info"; then
         name="$name   no sound here"
       fi
@@ -261,8 +236,6 @@ Remove this entry, put the earbuds in pairing mode, and connect the entry that a
       fi
     else
       bt_close
-      # bluetoothctl's last line is the reason, e.g. "Failed to connect:
-      # org.bluez.Error.Failed br-connection-profile-unavailable".
       whiptail --title "$title" --msgbox "Could not connect to $name.
 
 $(tail -n 1 "$tmp" | sed 's/org\.bluez\.Error\.//')
@@ -272,9 +245,6 @@ Check the device is in pairing mode and try again." 13 60
   done
 }
 
-# The speakers and microphone, picked the same way. Choosing one makes it the
-# default and moves whatever is already playing or recording onto it. A
-# second click on the bar closes the window.
 sound() {
   if pkill -f "^kitty --class bierstadt-sound" 2>/dev/null; then return 0; fi
   local -x COLORTERM=truecolor NEWT_COLORS
@@ -284,8 +254,6 @@ sound() {
      "$0" sound-menu >/dev/null 2>&1 &)
 }
 
-# Lines of "name<TAB>description" for sinks or sources, leaving out the
-# monitor sources PipeWire makes for every output.
 sound_list() {
   pactl -f json list "$1" | jq -r '.[] | select(.name | endswith(".monitor") | not)
                                   | "\(.name)\t\(.description)"'
@@ -327,9 +295,6 @@ sound_menu() {
   done
 }
 
-# btop, the "instruments" behind cpu and mem, in the room's colours. btop
-# rewrites its config on exit, so the config stays local and only the themes
-# (config/btop/themes) live in the repo. A second click closes the window.
 instruments() {
   local conf="$HOME/.config/btop/btop.conf" mode
   if pkill -f "^kitty --class bierstadt-instruments" 2>/dev/null; then return 0; fi
@@ -350,8 +315,7 @@ instruments() {
 start() {
   command -v eww >/dev/null || { echo "bierstadt-bar: eww is not installed" >&2; exit 1; }
   room
-  # --quit stops the session restarting it. Only send it to a running panel:
-  # with none running, xfce4-panel pops up a "No running instance" dialog.
+  # With no panel running, --quit pops up a "No running instance" dialog.
   if pgrep -x xfce4-panel >/dev/null; then xfce4-panel --quit 2>/dev/null || true; fi
   eww daemon 2>/dev/null || true
   eww open bar

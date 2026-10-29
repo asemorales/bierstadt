@@ -1,17 +1,15 @@
-/* bierstadt-dark (dark): gwern.net's dark theme. What each palette colour is used for. */
-
 @define-color g_bg            @night;
-@define-color g_bg_alt        @night_panel;    /* sidebars, like gwern's TOC */
+@define-color g_bg_alt        @night_panel;
 @define-color g_view          @night;
 @define-color g_header        @night;
 @define-color g_header_back   @night;
 @define-color g_panel         alpha(@night, 0.90);
 @define-color g_popover       @night_panel;
-@define-color g_border        @night_rule;     /* hairlines */
-@define-color g_frame         @night_frame;    /* menu and card borders */
+@define-color g_border        @night_rule;
+@define-color g_frame         @night_frame;
 @define-color g_border_strong @night_mid;
 @define-color g_border_hover  @night_dim;
-@define-color g_rule          @night_dim;      /* heading rules */
+@define-color g_rule          @night_dim;
 
 @define-color g_fg            @night_text;
 @define-color g_fg_strong     #FFFCF6;
@@ -20,10 +18,9 @@
 
 @define-color g_hover         @night_hover;
 @define-color g_active        mix(@night_hover, @night_mid, 0.3);
-@define-color g_selected_bg   @night_sel;      /* inverted, like gwern.net */
+@define-color g_selected_bg   @night_sel;
 @define-color g_selected_fg   #000000;
-/* Selected rows in lists, sidebars and file views. Not inverted: the icons are
-   pale, and they would vanish on a pale row. */
+/* Not inverted, so pale icons stay visible on selected rows. */
 @define-color g_item_sel_bg   @night_frame;
 @define-color g_item_sel_fg   #FFFCF6;
 @define-color g_trough        @night_panel;
@@ -38,7 +35,7 @@
 @define-color g_tooltip_bg    @night_panel;
 @define-color g_tooltip_fg    @night_text;
 
-@define-color g_accent        @night_sel;      /* no colour accent */
+@define-color g_accent        @night_sel;
 @define-color g_shadow        alpha(black, 0.25);
 @define-color g_shadow_strong alpha(black, 0.40);
 

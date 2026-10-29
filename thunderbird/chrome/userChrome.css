@@ -1,31 +1,18 @@
-/* Bierstadt for Thunderbird.
- *
- * Thunderbird 140 builds its whole interface from a few grey, blue and
- * white tokens. This file swaps those tokens for the Bierstadt palette
- * (themes/bierstadt/gtk-3.0/_palette.css), so every pane follows along.
- * It follows the desktop: bierstadt-dark reads as dark and Bierstadt reads as light,
- * so `bierstadt-mode` switches Thunderbird too.
- *
- * Selection already uses the GTK accent (ink, or the inverted grey in the
- * dark room). The blues fold into ink, as they do in the GTK theme.
- *
- * !important is needed because user sheets lose to Thunderbird's own
- * declarations otherwise. */
+/* User sheets lose to Thunderbird's own declarations without !important. */
 
-/* Light room: a book page. Cream stock, sepia-black ink. */
 @media (prefers-color-scheme: light) {
   :root {
-    --color-white:   #F2ECDF !important;   /* paper: the main page */
+    --color-white:   #F2ECDF !important;
     --color-gray-05: #EFE8DA !important;
-    --color-gray-10: #ECE5D5 !important;   /* linen: sidebars */
+    --color-gray-10: #ECE5D5 !important;
     --color-gray-20: #E5DDCB !important;
-    --color-gray-30: #DDD4C1 !important;   /* stone: rules, hover */
+    --color-gray-30: #DDD4C1 !important;
     --color-gray-40: #BDB4A4 !important;
-    --color-gray-50: #857C6F !important;   /* quiet text */
+    --color-gray-50: #857C6F !important;
     --color-gray-60: #6E6965 !important;
     --color-gray-70: #4A403A !important;
     --color-gray-80: #352B25 !important;
-    --color-gray-90: #231A15 !important;   /* ink */
+    --color-gray-90: #231A15 !important;
     --color-black:   #140E0B !important;
 
     --color-blue-40: #4A403A !important;
@@ -40,23 +27,21 @@
   }
 }
 
-/* Dark room: gwern.net's dark page, its greys tinted slightly brown. */
 @media (prefers-color-scheme: dark) {
   :root {
     --color-black:   #100D0A !important;
-    --color-gray-90: #191612 !important;   /* night: the main page */
-    --color-gray-80: #25211C !important;   /* night_panel: sidebars */
+    --color-gray-90: #191612 !important;
+    --color-gray-80: #25211C !important;
     --color-gray-70: #332E27 !important;
-    --color-gray-60: #4D463E !important;   /* night_rule: hairlines, hover */
-    --color-gray-50: #81786D !important;   /* night_mid */
-    --color-gray-40: #9E958A !important;   /* night_dim: quiet text */
+    --color-gray-60: #4D463E !important;
+    --color-gray-50: #81786D !important;
+    --color-gray-40: #9E958A !important;
     --color-gray-30: #C9C1B4 !important;
-    --color-gray-20: #E0D9CD !important;   /* night_sel */
-    --color-gray-10: #F2EDE4 !important;   /* night_text: body text */
+    --color-gray-20: #E0D9CD !important;
+    --color-gray-10: #F2EDE4 !important;
     --color-gray-05: #F7F3EC !important;
     --color-white:   #FBF8F2 !important;
 
-    /* blue-40 is text on the page; blue-50 sits behind white badge numbers. */
     --color-blue-40: #F2EDE4 !important;
     --color-blue-50: #6B6258 !important;
     --color-blue-60: #81786D !important;
@@ -69,7 +54,7 @@
   }
 }
 
-/* The same greys stand in for the indigo "ink" scale used by the spaces bar. */
+/* The spaces bar uses the indigo scale. */
 :root {
   --color-ink-10: var(--color-gray-10) !important;
   --color-ink-20: var(--color-gray-20) !important;
@@ -82,10 +67,6 @@
   --color-ink-90: var(--color-gray-90) !important;
 }
 
-/* ---- Quieter chrome ------------------------------------------------------ */
-
-/* Status colours fold into ink too: green unread dots, the yellow "new" star,
-   and every coloured folder icon. */
 :root {
   --color-green-30: light-dark(#4A403A, #E0D9CD) !important;
   --color-green-40: light-dark(#231A15, #E0D9CD) !important;
@@ -109,17 +90,14 @@
   --folder-color-folder-filter: var(--layout-color-2) !important;
   --folder-color-folder-rss: var(--layout-color-2) !important;
 
-  /* Every unread message gets the four-pointed star, not just new arrivals.
-     Thunderbird gives the star to "new" mail only; once that flag clears
-     (opening the folder, restarting) unread mail falls back to a dot. */
+  /* Thunderbird gives the four-pointed star only to "new" mail, and unread
+     mail falls back to a dot once that flag clears. */
   --read-status-icon: var(--read-status-new) !important;
 
-  /* No grey strip behind the tabs. */
   --tabs-toolbar-background-color: transparent !important;
   --tabs-toolbar-box-shadow: none !important;
 }
 
-/* Titles in the desktop's serif small caps, like the top bar and GTK headers. */
 #folderTree li[data-server-type] > .container > .name,
 #threadPaneFolderName {
   font-family: "Source Serif 4", serif !important;
@@ -132,7 +110,6 @@
   font-feature-settings: "smcp" !important;
 }
 
-/* Unread counts as plain quiet numbers instead of grey pills. */
 .unread-count {
   background-color: transparent !important;
   border-color: transparent !important;
@@ -140,13 +117,11 @@
   font-variant-numeric: tabular-nums !important;
 }
 
-/* New Message: one solid ink button, the only filled control on screen. */
 #folderPaneWriteMessage {
   background-color: var(--color-primary-default) !important;
   color: var(--color-white) !important;
   border-color: transparent !important;
   border-radius: 999px !important;
-  /* The + icon is a background image, so the text starts after it. */
   background-position: 14px center !important;
   padding-inline: calc(14px + var(--icon-size) + 8px) 16px !important;
 }
@@ -154,8 +129,6 @@
   #folderPaneWriteMessage { color: #191612 !important; }
 }
 
-/* Message cards: no boxes. Rows sit on the page and only hover and selection
-   show a soft rounded fill. */
 #threadTree[rows="thread-card"] {
   --tree-card-block: 2px !important;
   --tree-card-content-radius: 10px !important;
@@ -170,11 +143,6 @@
   }
 }
 
-/* ---- Search results (Gloda facet view) ---------------------------------- */
-
-/* The search tab is its own chrome page with hardcoded blues, lightgrey
-   borders and monospace excerpts. Restyle it like the message list: serif
-   small-caps headings, Inter text, hairline rules and soft rounded hovers. */
 @-moz-document url("chrome://messenger/content/glodaFacetView.xhtml") {
   #body {
     --linkColor: var(--layout-color-1) !important;
@@ -183,7 +151,6 @@
     --dateHLColor: var(--layout-color-2) !important;
     --bierstadt-rule: light-dark(var(--color-gray-30), var(--color-gray-60));
     --bierstadt-hover: var(--color-primary-soft);
-    /* The inbox's card view: cards on the page colour, set in a darker well. */
     --bierstadt-well: light-dark(var(--color-gray-05), var(--color-black));
     --bierstadt-card: var(--layout-background-0);
     --bierstadt-card-hover: light-dark(
@@ -204,7 +171,6 @@
     padding-inline: 2.5em 1em !important;
   }
 
-  /* Section titles: Filters, People, Folder, Account. */
   .facets-sidebar :is(h1, h2, h3),
   .facet-included-header,
   .facet-excluded-header,
@@ -216,7 +182,6 @@
     color: var(--layout-color-2) !important;
   }
 
-  /* "Results for: globe" as a page title. */
   .explanation-fulltext-label,
   .explanation-query-label {
     font-family: "Source Serif 4", serif !important;
@@ -231,7 +196,6 @@
     font-style: italic !important;
   }
 
-  /* Facet rows: no ruled table, just names and quiet counts. */
   .barry,
   .bar {
     border-color: transparent !important;
@@ -254,7 +218,6 @@
     font-variant-numeric: tabular-nums !important;
   }
 
-  /* "Show results as list": a quiet text link. */
   .results-message-showall-button {
     color: var(--layout-color-2) !important;
     text-decoration: none !important;
@@ -274,7 +237,6 @@
     padding-inline-start: 10px !important;
   }
 
-  /* Messages: the same cards as the inbox list. */
   .message {
     font-family: "Inter", sans-serif !important;
     font-size: 0.95em !important;
@@ -314,7 +276,6 @@
     color: var(--layout-color-2) !important;
   }
 
-  /* Excerpts in the mail font, a step quieter than the subject. */
   .message-body {
     font-family: "Inter", sans-serif !important;
     font-size: 0.95em !important;

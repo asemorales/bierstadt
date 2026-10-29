@@ -1,7 +1,3 @@
-# Bierstadt Light for btop: the light room. Brown-black ink on paper, no
-# accent colour. Graphs darken from pencil grey to ink, and only heat
-# (temperature, memory in use) warms to ochre and rust. Palette: themes/bierstadt.
-
 theme[main_bg]="#F2ECDF"
 theme[main_fg]="#231A15"
 theme[title]="#231A15"

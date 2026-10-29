@@ -23,13 +23,11 @@ TSV="$DATA_DIR/paintings.tsv"
 TERMINALRC="$HOME/.config/xfce4/terminal/terminalrc"
 KITTY_DIR="$HOME/.config/kitty"
 FIREFOX_DIR="$HOME/.mozilla/firefox"
-REPO="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)"   # this script is a link into the repo
+REPO="$(cd "$(dirname "$(readlink -f "$0")")/../.." && pwd)"
 WORKSPACES=4
 CURSOR_SIZE=48      # 24px at the 2x scale
 DEFAULT_MODE=dark
 
-# Terminal palettes, checked for at least 4.5:1 against their background.
-# The chrome has no colour, but the ANSI slots keep muted hues so output stays readable.
 LIGHT_TERM=(
   ColorBackground=#F2ECDF
   ColorForeground=#231A15
@@ -44,7 +42,6 @@ LIGHT_TERM=(
   TabActivityColor=#231A15
   "ColorPalette=#231A15;#B04A2A;#5B6E3A;#85651B;#2F5470;#7D4B63;#3E6F6A;#DDD4C1;#6E6965;#AA4A2B;#5A6E38;#82641A;#3A6588;#8E5672;#3F716C;#FFFFFF"
 )
-# gwern.net's dark page (#191612) with warm, creamy light greys for text.
 DARK_TERM=(
   ColorBackground=#191612
   ColorForeground=#EFE6D6
@@ -68,8 +65,6 @@ screen_size() {
   xrandr --current | awk '/ connected primary/ { for (i = 1; i <= NF; i++) if ($i ~ /^[0-9]+x[0-9]+\+/) { split($i, a, "+"); print a[1]; exit } }'
 }
 
-# Read the paintings in wall.yml, cut each painting to fill the
-# screen, and write paintings.tsv and one file per room.
 build_data() {
   mkdir -p "$DATA_DIR/screen"
   python3 -I - "$WALL" "$PICTURES" "$DATA_DIR" "$(screen_size)" <<'PY'
@@ -81,10 +76,10 @@ paintings = wall["paintings"]
 clean = lambda s: " ".join(str(s).split())
 
 wanted = {k for room in wall["rooms"].values() for k in room}
-login = wall.get("login")             # boot menu and login screen, outside the rooms
+login = wall.get("login")
 if login:
     wanted.add(login)
-life = wall.get("life") or {}         # caption overrides; "" shows the label alone
+life = wall.get("life") or {}
 rows = []
 for key in sorted(wanted):
     p = paintings[key]
@@ -93,7 +88,6 @@ for key in sorted(wanted):
         sys.exit(f"no file for {key} in {pictures}; download it from {p['source']}")
     w, h = (int(x) for x in subprocess.check_output(
         ["identify", "-format", "%w %h", src[0] + "[0]"]).split())
-    # Scale to cover the screen, then cut the overflow, top share from wall.yml.
     scale = max(sw / w, sh / h)
     cw, ch = round(sw / scale), round(sh / scale)
     top = float(wall.get("crop_top", {}).get(key, 0.5))
@@ -140,7 +134,7 @@ set_wallpapers() {  # fill-r fill-g fill-b key...
       [ -n "$file" ] || { echo "missing painting: $key" >&2; continue; }
       base="/backdrop/screen0/monitor$mon/workspace$ws"
       set_prop xfce4-desktop "$base/last-image" string "$file"
-      set_prop xfce4-desktop "$base/image-style" int 5       # zoomed: the file is already cut to fit
+      set_prop xfce4-desktop "$base/image-style" int 5
       set_prop xfce4-desktop "$base/color-style" int 0
       set_prop xfce4-desktop "$base/backdrop-cycle-enable" bool false
       set_rgba xfce4-desktop "$base/rgba1" "$r" "$g" "$b"
@@ -148,7 +142,7 @@ set_wallpapers() {  # fill-r fill-g fill-b key...
   done
 }
 
-set_panel_load_colors() {  # r g b, for the system load plugin's bars
+set_panel_load_colors() {  # r g b
   local id prop
   for id in $(xfconf-query -c xfce4-panel -lv | awk '$2 == "systemload" { sub("/plugins/plugin-", "", $1); print $1 }'); do
     for prop in cpu memory swap network; do
@@ -161,7 +155,7 @@ set_terminal() {
   # One write, so xfce4-terminal reloads once with every colour in place.
   [ -e "$TERMINALRC" ] || return 0
   local target tmp
-  target=$(readlink -f "$TERMINALRC")    # terminalrc is a link into ~/code/dotfiles
+  target=$(readlink -f "$TERMINALRC")
   tmp=$(mktemp "$target.XXXXXX")
   python3 -I - "$target" "$@" > "$tmp" <<'PY'
 import sys
@@ -182,7 +176,6 @@ PY
 }
 
 set_cursor() {
-  # xsettings covers GTK apps; ~/.icons/default covers the desktop and Qt.
   set_prop xsettings /Gtk/CursorThemeName string "$1"
   set_prop xsettings /Gtk/CursorThemeSize int "$CURSOR_SIZE"
   mkdir -p "$HOME/.icons/default"
@@ -194,18 +187,15 @@ set_cursor() {
 }
 
 set_color_scheme() {  # scheme theme
-  # The desktop-wide light/dark preference. Browsers, Electron apps and
-  # libadwaita read it through xdg-desktop-portal; "default" reads as light.
   command -v gsettings >/dev/null || return 0
   gsettings set org.gnome.desktop.interface color-scheme "$1"
   gsettings set org.gnome.desktop.interface gtk-theme "$2"
 }
 
 set_kitty() {
-  # room.conf is a local link, so the repo copy stays the same in both rooms.
   [ -e "$KITTY_DIR/kitty.conf" ] || return 0
   ln -sfn "bierstadt-$1.conf" "$KITTY_DIR/room.conf"
-  pkill -USR1 -x kitty 2>/dev/null || true     # open windows reread their config
+  pkill -USR1 -x kitty 2>/dev/null || true
 }
 
 set_firefox() {  # key page text dim
@@ -220,7 +210,6 @@ set_firefox() {  # key page text dim
 import base64, subprocess, sys
 template, out, tsv, key, page, text, dim = sys.argv[1:]
 row = next(l.rstrip("\n").split("\t") for l in open(tsv, encoding="utf-8") if l.startswith(key + "\t"))
-# 1920 wide is sharp enough behind a search box and keeps the sheet small.
 jpg = subprocess.check_output(["convert", row[1], "-resize", "1920x>", "-quality", "82", "jpg:-"])
 label = row[6].replace("\\", "\\\\").replace('"', '\\"')
 css = open(template, encoding="utf-8").read()
@@ -235,14 +224,14 @@ apply() {
   local mode=$1 theme scheme cursor fill set term load
   if [ "$mode" = dark ]; then
     theme=bierstadt-dark; scheme=prefer-dark; term=("${DARK_TERM[@]}")
-    cursor=bierstadt-cursors-dark                # a pale pointer on the dark room
-    fill=(0.098039 0.086275 0.070588)          # #191612
-    load=(0.620 0.584 0.541)                   # #9E958A
+    cursor=bierstadt-cursors-dark
+    fill=(0.098039 0.086275 0.070588)
+    load=(0.620 0.584 0.541)
   else
     theme=bierstadt; scheme=prefer-light; term=("${LIGHT_TERM[@]}")
     cursor=bierstadt-cursors
-    fill=(0.949020 0.925490 0.874510)          # paper #F2ECDF
-    load=(0.420 0.396 0.376)                   # ink at 62% on paper
+    fill=(0.949020 0.925490 0.874510)
+    load=(0.420 0.396 0.376)
   fi
 
   if [ ! -s "$TSV" ] || [ "$WALL" -nt "$TSV" ]; then build_data >/dev/null; fi
@@ -259,7 +248,6 @@ apply() {
   set_wallpapers "${fill[@]}" "${set[@]}"
   set_terminal "${term[@]}"
   set_kitty "$mode"
-  # Firefox's new tab gets a different painting from the room on every run.
   local tab last
   last=$(cat "$STATE_DIR/firefox" 2>/dev/null || true)
   tab=$(printf '%s\n' "${set[@]}" | grep -vxF -- "$last" | shuf -n 1 || true)

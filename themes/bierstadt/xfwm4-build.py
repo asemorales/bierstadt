@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Draw the bierstadt and bierstadt-dark xfwm4 decorations.
 
-xfwm4 does not scale its pixmaps, and this screen runs at 2x, so every size
-below is in device pixels (logical size x 2). Run again after changing a colour:
+xfwm4 does not scale its pixmaps, so every size is in device pixels.
+Run again after changing a colour:
 
     python3 ~/.themes/bierstadt/xfwm4-build.py
 """
@@ -10,13 +10,13 @@ import os
 from PIL import Image, ImageDraw
 
 S = 2                 # device pixels per logical pixel
-TITLE_H = 26 * S      # flat title bar
-BORDER = 1 * S        # side and bottom hairline
-RADIUS = 10 * S       # top corners
-CORNER_W = max(RADIUS, BORDER)  # width of the top-left/right pieces
+TITLE_H = 26 * S
+BORDER = 1 * S
+RADIUS = 10 * S
+CORNER_W = max(RADIUS, BORDER)
 BTN_W = 18 * S
 GLYPH = 4 * S         # half-size of each button glyph
-LINE = 1 * S          # glyph stroke
+LINE = 1 * S
 
 def _palette():
     import re
@@ -46,10 +46,10 @@ def mix(a, b, t):
 
 VARIANTS = {
     "bierstadt": dict(
-        active=mix(PAPER, STONE, 0.35),          # only slightly darker than inactive
+        active=mix(PAPER, STONE, 0.35),
         inactive=PAPER,
         line=STONE,
-        border=mix(PAPER, INK, 0.35),            # a hairline frame round the window
+        border=mix(PAPER, INK, 0.35),
         text_active=INK,
         text_inactive=mix(PAPER, INK, 0.60),
         glyph_active=mix(PAPER, INK, 0.62),
@@ -58,9 +58,9 @@ VARIANTS = {
         hover=mix(mix(PAPER, STONE, 0.35), INK, 0.07),
         pressed=mix(mix(PAPER, STONE, 0.35), INK, 0.13),
     ),
-    "bierstadt-dark": dict(                         # gwern.net's dark greys
+    "bierstadt-dark": dict(
         active=NIGHT,
-        inactive="#1F1B17",                      # only slightly lighter than active
+        inactive="#1F1B17",
         line=NIGHT_RULE,
         border=NIGHT_FRAME,
         text_active=NIGHT_TEXT,
@@ -93,7 +93,6 @@ def corner(bg, line, border, side):
     im = Image.new("RGBA", (CORNER_W, TITLE_H), bg)
     d = ImageDraw.Draw(im)
     d.rectangle([0, TITLE_H - S, CORNER_W, TITLE_H], fill=line)
-    # outer hairline below the curve, matching the side border
     d.rectangle([0, RADIUS, BORDER - 1, TITLE_H], fill=border)
     d.rectangle([0, 0, CORNER_W, BORDER - 1], fill=border)
     if RADIUS:

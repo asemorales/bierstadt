@@ -1,44 +1,40 @@
-# Which paintings hang in each room, and how to fit them to the screen.
-# Read by ~/.local/bin/bierstadt-mode. Run `bierstadt-mode data` after editing.
+# Run `bierstadt-mode data` after editing.
 
-# One painting per workspace, in order. Keys come from `paintings` below.
 rooms:
   light: [monet, monsted, polenov, kuindzhi]
-  dark: [bierstadt, bierstadt_landers, bierstadt_valley, bierstadt_rocky]   # all Bierstadt
+  dark: [bierstadt, bierstadt_landers, bierstadt_valley, bierstadt_rocky]
 
-# The painting behind the boot menu (bierstadt-grub) and the login screen
-# (bierstadt-greeter) in both rooms. Leave it out to use each room's first painting.
+# Leave `login` out to use each room's first painting.
 login: bierstadt_lucerne
 
-# Paintings are cropped to fill the screen. This is the share of the cut taken
-# from the top (1 = all sky, 0 = all foreground). Crop sky or land, never figures.
+# The share of the crop taken from the top (1 = all sky, 0 = all foreground).
+# Crop sky or land and keep figures in frame.
 crop_top:
-  monet: 0.35          # the two women stand mid-frame on the cliff
+  monet: 0.35
   monsted: 0.5
-  polenov: 0.85        # children and the path sit at the bottom
+  polenov: 0.85
   kuindzhi: 0.5
-  bierstadt: 0.7       # deer at the water's edge
+  bierstadt: 0.7
   church: 0.5
-  aivazovsky: 0.85     # survivors on the mast, bottom left
-  bierstadt_landers: 0.8    # the encampment fills the foreground
-  bierstadt_valley: 0.75    # cattle by the river
+  aivazovsky: 0.85
+  bierstadt_landers: 0.8
+  bierstadt_valley: 0.75
   bierstadt_storm: 0.5
-  bierstadt_rocky: 0.65     # the deer by the water, bottom centre
-  bierstadt_staubbach: 0.5  # the peaks and the falls, the valley floor below
-  bierstadt_lucerne: 0.4    # the campfire and the cattle on the path, bottom left
-  kuindzhi_moon: 0.45  # keep the moon clear of the panel and the river in view
+  bierstadt_rocky: 0.65
+  bierstadt_staubbach: 0.5
+  bierstadt_lucerne: 0.4
+  kuindzhi_moon: 0.45
 
 # Caption lines that replace a painting's `life` sentence. An empty string
 # shows the label alone.
 life:
   bierstadt: ""
-  # light room: the label alone
   monet: ""
   monsted: ""
   polenov: ""
   kuindzhi: ""
 
-# Every painting a room or the login screen can hang. `life` is optional.
+# `life` is optional.
 paintings:
   bierstadt:
     artist: Albert Bierstadt

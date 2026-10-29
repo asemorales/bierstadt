@@ -1,21 +1,15 @@
-/* Bierstadt palette.
- * The one place the colours live. Both bierstadt and bierstadt-dark import this file.
- * No accent colour: like gwern.net, the only colour on screen is the painting. */
-
-/* Light room: a book page. Cream stock, sepia-black ink. */
 @define-color paper     #F2ECDF;
-@define-color linen     #ECE5D5;   /* sidebars, panels */
-@define-color stone     #DDD4C1;   /* rules and hairlines */
-@define-color muted     #9A9183;   /* disabled text */
+@define-color linen     #ECE5D5;
+@define-color stone     #DDD4C1;
+@define-color muted     #9A9183;
 @define-color ink       #231A15;
 
-/* Dark room: gwern.net's dark theme, its greys tinted slightly brown. */
-@define-color night       #191612;   /* page */
-@define-color night_panel #25211C;   /* sidebars, menus, like gwern's TOC */
-@define-color night_hover #3A342D;   /* row and button hover */
-@define-color night_rule  #4D463E;   /* hairlines */
-@define-color night_frame #615950;   /* menu and card borders */
-@define-color night_mid   #81786D;   /* button rings, scrollbars */
-@define-color night_dim   #9E958A;   /* secondary text, heading rules */
-@define-color night_sel   #E0D9CD;   /* selection, shown inverted */
-@define-color night_text  #F2EDE4;   /* body text */
+@define-color night       #191612;
+@define-color night_panel #25211C;
+@define-color night_hover #3A342D;
+@define-color night_rule  #4D463E;
+@define-color night_frame #615950;
+@define-color night_mid   #81786D;
+@define-color night_dim   #9E958A;
+@define-color night_sel   #E0D9CD;
+@define-color night_text  #F2EDE4;

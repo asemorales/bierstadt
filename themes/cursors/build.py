@@ -1,11 +1,8 @@
 #!/usr/bin/env python3
-"""Build the Bierstadt cursors: Bibata Modern recoloured in the rooms' ink and paper.
+"""Build the Bierstadt cursors from Bibata Modern.
 
     python3 -I themes/cursors/build.py
 
-Downloads the Bibata source once (GPL-3.0, ful1e5/Bibata_Cursor), swaps its
-placeholder colours, renders every SVG with rsvg-convert and packs the PNGs
-with xcursorgen into ~/.local/share/icons/bierstadt-cursors{-dark,}.
 Debian's libXcursor skips ~/.local/share/icons, so each theme is also linked
 into ~/.icons for kitty and xfwm4.
 """
@@ -22,11 +19,10 @@ CACHE = os.path.expanduser(f"~/.cache/bierstadt/bibata-{TAG}")
 ICONS = os.path.expanduser("~/.local/share/icons")
 DOT_ICONS = os.path.expanduser("~/.icons")
 SIZES = [24, 32, 48, 64, 72, 96]
-SRC = 256  # Bibata draws on a 256px canvas; hotspots are in those units
+SRC = 256  # Bibata draws on a 256px canvas, and hotspots are in those units
 
 # Bibata's placeholders: #00FF00 body, #0000FF outline, #FF0000 the watch face.
-# The spinner's four coloured quarters fold into two tones, like the GTK themes.
-SPINNER = ("#32A0DA", "#F05024", "#FCB813", "#7EBA41")  # blue, red, yellow, green
+SPINNER = ("#32A0DA", "#F05024", "#FCB813", "#7EBA41")
 
 
 def variant(body, outline, mid):
@@ -35,9 +31,7 @@ def variant(body, outline, mid):
 
 
 VARIANTS = {
-    # A pale pointer on the dark room, outlined in its page colour.
     "bierstadt-cursors-dark": variant("#E3D8C4", "#191612", "#9E958A"),
-    # An ink pointer on paper.
     "bierstadt-cursors": variant("#231A15", "#F2ECDF", "#6B6560"),
 }
 

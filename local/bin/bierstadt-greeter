@@ -1,13 +1,6 @@
 #!/usr/bin/env bash
-# bierstadt-greeter: dress the login screen (lightdm-gtk-greeter) in the current room.
-#
-#   bierstadt-greeter        copy the theme, icons, fonts and first painting into
-#                          system folders and point the greeter at them (asks for sudo)
-#
 # The greeter runs as the lightdm user, which cannot read ~/.themes or
-# ~/.local, so everything is copied under /usr/local/share. Run it again after
-# `bierstadt-mode light|dark`, after rebuilding the themes, or after changing
-# the paintings.
+# ~/.local, so everything is copied under /usr/local/share.
 
 set -euo pipefail
 
@@ -24,12 +17,10 @@ DEFAULT_MODE=dark
 mode=$(cat "$STATE_DIR/mode" 2>/dev/null || echo "$DEFAULT_MODE")
 if [ "$mode" = dark ]; then theme=bierstadt-dark; else theme=bierstadt; fi
 
-# wall.yml's `login` painting, the same on the boot menu and the login screen,
-# or else the painting on the room's first workspace.
 key=$(head -n 1 "$DATA_DIR/login" 2>/dev/null || true)
 [ -n "$key" ] || key=$(head -n 1 "$DATA_DIR/room-$mode")
 painting=$(awk -F'\t' -v k="$key" '$1 == k { print $2 }' "$TSV")
-[ -s "$painting" ] || { echo "no painting for $key; run bierstadt-mode data" >&2; exit 1; }
+[ -s "$painting" ] || { echo "no painting for $key. Run bierstadt-mode data" >&2; exit 1; }
 
 sudo -v
 sudo install -d "$SHARE/themes" "$SHARE/icons" "$SHARE/fonts/bierstadt"
@@ -49,7 +40,6 @@ sudo fc-cache -f "$SHARE/fonts" >/dev/null
 
 sudo install -Dm644 "$painting" "$SHARE/backgrounds/bierstadt/greeter.jpg"
 
-# Keep the first original, then set only the keys Bierstadt owns.
 [ -e "$CONF.pre-bierstadt" ] || sudo cp -p "$CONF" "$CONF.pre-bierstadt"
 tmp=$(mktemp)
 python3 -I - "$CONF" > "$tmp" \

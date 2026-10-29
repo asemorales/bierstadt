@@ -1,7 +1,3 @@
-# Bierstadt Dark for btop: the dark room. Cream ink on gwern.net's page, no
-# accent colour. Graphs rise from pencil grey to cream, and only heat
-# (temperature, memory in use) warms to gold and rust. Palette: themes/bierstadt.
-
 theme[main_bg]="#191612"
 theme[main_fg]="#EFE6D6"
 theme[title]="#F2EDE4"

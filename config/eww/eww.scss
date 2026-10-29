@@ -1,6 +1,4 @@
-// The Bierstadt bar. Colours come from _room.scss, which bierstadt-bar points at
-// _dark.scss or _light.scss. Like the GTK theme there is no accent colour:
-// the current plate is ink and underlined, the rest are pencil grey.
+// bierstadt-bar links _room.scss to _dark.scss or _light.scss.
 
 @import "room";
 
@@ -26,7 +24,6 @@
   color: $text;
 }
 
-// Icons are symbolic, so they take the colour of the button they sit in.
 .glyph {
   -gtk-icon-style: symbolic;
 }
@@ -54,7 +51,6 @@
   color: $text;
 }
 
-// The volume: a hairline rule with a small ink dot, no accent colour.
 .slider {
   min-width: 90px;
 }

@@ -1,13 +1,6 @@
 #!/usr/bin/env python3
-# bierstadt-root: fill the X root window with one colour, the way hsetroot does.
-#
-#   bierstadt-root '#191612'
-#
-# xsetroot -solid is not enough under xfwm4's compositor. The compositor
-# paints the root from the pixmap named in _XROOTPMAP_ID / ESETROOT_PMAP_ID,
-# tiled. The login screen leaves its 1920x1080 picture there, so at
-# 3840x2160 it shows 2x2 until xfdesktop draws. This frees that pixmap and
-# publishes a 1x1 pixmap of the colour instead.
+# xfwm4's compositor tiles the root from the pixmap in _XROOTPMAP_ID / ESETROOT_PMAP_ID,
+# which the greeter leaves at 1920x1080, so xsetroot -solid is not enough.
 
 import ctypes
 import ctypes.util

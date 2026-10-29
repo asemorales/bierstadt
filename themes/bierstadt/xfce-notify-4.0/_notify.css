@@ -1,6 +1,3 @@
-/* Bierstadt notifications: rounded cards with a hairline frame.
-   Shared by both variants; colours come from each variant's gtk.css below. */
-
 #XfceNotifyWindow {
   background-color: @n_bg;
   border: 1px solid @n_border;

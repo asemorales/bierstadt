@@ -1,6 +1,4 @@
-# Bierstadt Dark: the dark room, gwern.net's dark page tinted brown.
 # Same colours as the GTK theme (themes/bierstadt/gtk-3.0/_palette.css).
-# No accent colour. Weight, italics and inversion do the work.
 
 #:schema https://yazi-rs.github.io/schemas/theme.json
 
@@ -33,7 +31,6 @@ select_alt  = { fg = "#9E958A", bg = "#25211C" }
 unset_main  = { fg = "#191612", bg = "#9E958A", bold = true }
 unset_alt   = { fg = "#9E958A", bg = "#25211C" }
 
-# The hovered row is inverted, like a selection in the GTK theme.
 [indicator]
 parent  = { fg = "#F2EDE4", bg = "#3A342D" }
 current = { fg = "#191612", bg = "#E0D9CD" }
@@ -101,7 +98,6 @@ chord   = { fg = "#F2EDE4", bold = true }
 action  = { fg = "#9E958A" }
 hovered = { fg = "#191612", bg = "#E0D9CD" }
 
-# Folders bold, pictures italic like a plate caption, the rest plain ink.
 [filetype]
 rules = [
 	{ mime = "vfs/{absent,stale}", fg = "#81786D" },

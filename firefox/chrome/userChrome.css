@@ -1,23 +1,13 @@
-/* Bierstadt for Firefox.
- *
- * Firefox 140 colours its chrome from a handful of tokens
- * (browser/themes/shared/browser-colors.css). This file swaps them for the
- * Bierstadt palette (themes/bierstadt/gtk-3.0/_palette.css). light-dark() follows
- * the desktop: bierstadt-dark reads as dark and Bierstadt reads as light, so
- * `bierstadt-mode` switches Firefox too. It needs the default "System theme",
- * not a dark or coloured one; user.js picks it.
- *
- * The tab strip is the linen panel, the selected tab and toolbar are the page
- * lifting out of it, like a sheet drawn from a folder. */
+/* Firefox 140 colours its chrome from the tokens in
+ * browser/themes/shared/browser-colors.css. light-dark() follows the desktop,
+ * so it needs the default "System theme". */
 
 :root {
-  /* Tab strip and window */
   --toolbox-bgcolor:          light-dark(#ECE5D5, #25211C) !important;
   --toolbox-bgcolor-inactive: light-dark(#ECE5D5, #25211C) !important;
   --toolbox-textcolor:          light-dark(#231A15, #F2EDE4) !important;
   --toolbox-textcolor-inactive: light-dark(#6E6965, #9E958A) !important;
 
-  /* Selected tab and the toolbar beneath it: the page */
   --tab-selected-bgcolor:   light-dark(#F2ECDF, #191612) !important;
   --tab-selected-textcolor: light-dark(#231A15, #F2EDE4) !important;
   --tab-selected-shadow: none !important;
@@ -29,14 +19,12 @@
   --toolbar-color:   light-dark(#231A15, #F2EDE4) !important;
   --tabs-navbar-separator-style: none !important;
 
-  /* Buttons: ink icons, soft stone hover */
   --toolbarbutton-icon-fill:           light-dark(#4A403A, #E0D9CD) !important;
   --toolbarbutton-icon-fill-attention: light-dark(#231A15, #F2EDE4) !important;
   --toolbarbutton-hover-background:  light-dark(#E5DDCB, #332E27) !important;
   --toolbarbutton-active-background: light-dark(#DDD4C1, #4D463E) !important;
   --toolbarbutton-border-radius: 8px !important;
 
-  /* Address bar: a linen field that turns to page with a hairline when typing */
   --toolbar-field-background-color:       light-dark(#ECE5D5, #25211C) !important;
   --toolbar-field-color:                  light-dark(#231A15, #F2EDE4) !important;
   --toolbar-field-border-color:           transparent !important;
@@ -54,20 +42,17 @@
   --urlbarView-separator-color:      light-dark(#DDD4C1, #4D463E) !important;
   --focus-outline-color: light-dark(#231A15, #E0D9CD) !important;
 
-  /* Menus and popups: page with a stone hairline */
   --arrowpanel-background:   light-dark(#F2ECDF, #191612) !important;
   --arrowpanel-color:        light-dark(#231A15, #F2EDE4) !important;
   --arrowpanel-border-color: light-dark(#DDD4C1, #4D463E) !important;
   --arrowpanel-border-radius: 12px !important;
   --panel-separator-color:   light-dark(#DDD4C1, #4D463E) !important;
 
-  /* Sidebar and the line above web pages */
   --sidebar-background-color: light-dark(#ECE5D5, #25211C) !important;
   --sidebar-text-color:       light-dark(#231A15, #F2EDE4) !important;
   --sidebar-border-color:     light-dark(#DDD4C1, #4D463E) !important;
   --chrome-content-separator-color: light-dark(#DDD4C1, #332E27) !important;
 
-  /* The blue accent folds into ink, as it does in the GTK theme */
   --color-accent-primary:        light-dark(#231A15, #E0D9CD) !important;
   --color-accent-primary-hover:  light-dark(#352B25, #F2EDE4) !important;
   --color-accent-primary-active: light-dark(#4A403A, #C9C1B4) !important;
@@ -76,7 +61,6 @@
   --attention-dot-color: light-dark(#231A15, #E0D9CD) !important;
 }
 
-/* A little more air around the tabs, like the margins of a page. */
 #TabsToolbar .tabbrowser-tab {
   padding-inline: 2px !important;
 }
@@ -84,7 +68,6 @@
   color: light-dark(#6E6965, #9E958A) !important;
 }
 
-/* No tinted backgrounds behind the address bar's identity box. */
 #identity-box > box,
 #tracking-protection-icon-container {
   background-color: transparent !important;

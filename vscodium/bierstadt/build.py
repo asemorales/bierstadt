@@ -1,10 +1,5 @@
 #!/usr/bin/env python3
-# Writes the Bierstadt colour themes for VSCodium, after config/nvim/colors/bierstadt.lua.
-# The greys come from themes/bierstadt/gtk-3.0/_palette.css and the few hues
-# from the terminal palettes in bierstadt-mode. No accent colour: the chrome is
-# ink on paper, and hues mark strings, numbers and diagnostics only.
-#
-#   python3 build.py    rewrites themes/bierstadt-dark.json and bierstadt-light.json
+# Writes themes/bierstadt-dark.json and bierstadt-light.json.
 
 import json, os
 
@@ -40,7 +35,6 @@ def a(hex_, alpha):  # hex plus a two-digit alpha
 
 def workbench(c):
     return {
-        # Ground: one page for editor, sidebars and panels, like the desktop.
         "foreground": c["fg"],
         "descriptionForeground": c["dim"],
         "disabledForeground": c["mid"],
@@ -61,7 +55,6 @@ def workbench(c):
         "textCodeBlock.background": c["panel"],
         "textSeparator.foreground": c["rule"],
 
-        # Buttons and badges are ink, shown inverted, as in the GTK theme.
         "button.background": c["fg"],
         "button.foreground": c["bg"],
         "button.hoverBackground": c["dim"],
@@ -143,7 +136,6 @@ def workbench(c):
         "scrollbarSlider.hoverBackground": a(c["mid"], "70"),
         "scrollbarSlider.activeBackground": a(c["mid"], "a0"),
 
-        # Bars and sidebars: the page itself, set off by hairlines.
         "titleBar.activeBackground": c["bg"],
         "titleBar.activeForeground": c["dim"],
         "titleBar.inactiveBackground": c["bg"],
@@ -210,7 +202,6 @@ def workbench(c):
         "panelSection.border": c["rule"],
         "panelSectionHeader.background": c["bg"],
 
-        # Tabs: the open page is the editor's own ground, the rest sit on linen.
         "editorGroup.border": c["rule"],
         "editorGroup.dropBackground": a(c["hover"], "99"),
         "editorGroupHeader.tabsBackground": c["panel"],
@@ -239,7 +230,6 @@ def workbench(c):
         "breadcrumb.activeSelectionForeground": c["bright"],
         "breadcrumbPicker.background": c["panel"],
 
-        # Editor
         "editor.background": c["bg"],
         "editor.foreground": c["fg"],
         "editorPane.background": c["bg"],
@@ -282,7 +272,6 @@ def workbench(c):
         "editorStickyScroll.shadow": c["rule"],
         "editorStickyScrollHover.background": c["panel"],
 
-        # Brackets stay ink: no rainbow, just one level of grey.
         **{f"editorBracketHighlight.foreground{i}": c["dim"] for i in range(1, 7)},
         "editorBracketHighlight.unexpectedBracket.foreground": c["red"],
         **{f"editorBracketPairGuide.activeBackground{i}": c["frame"] for i in range(1, 7)},
@@ -324,7 +313,6 @@ def workbench(c):
         "editorOverviewRuler.wordHighlightStrongForeground": a(c["dim"], "88"),
         "editorOverviewRuler.bracketMatchForeground": c["frame"],
 
-        # Floating widgets sit on linen with a frame, like menus.
         "editorWidget.background": c["panel"],
         "editorWidget.foreground": c["fg"],
         "editorWidget.border": c["frame"],
@@ -358,7 +346,6 @@ def workbench(c):
         "peekViewTitleLabel.foreground": c["fg"],
         "peekViewTitleDescription.foreground": c["dim"],
 
-        # Diffs, after DiffAdd, DiffDelete and DiffChange in nvim.
         "diffEditor.insertedLineBackground": c["add"],
         "diffEditor.removedLineBackground": c["dele"],
         "diffEditor.insertedTextBackground": a(c["green"], "33"),
@@ -401,7 +388,6 @@ def workbench(c):
         "gitlens.gutterUncommittedForegroundColor": c["dim"],
         "gitlens.trailingLineForegroundColor": c["mid"],
 
-        # Terminal, the same as Kitty in this room.
         "terminal.background": c["bg"],
         "terminal.foreground": c["fg"],
         "terminal.border": c["rule"],
@@ -494,7 +480,6 @@ def workbench(c):
 
 def tokens(c):
     rules = [
-        # Syntax: mostly ink, with emphasis carried by weight and slant.
         ("comment, punctuation.definition.comment, string.comment", c["dim"], "italic"),
         ("keyword, storage, storage.type, storage.modifier, keyword.control, keyword.other.important", c["fg"], "bold"),
         ("keyword.operator, punctuation, meta.brace, punctuation.separator, punctuation.terminator,"
@@ -532,7 +517,6 @@ def tokens(c):
         ("invalid.deprecated", c["yellow"], "strikethrough"),
         ("keyword.other.todo, comment.line.todo", c["yellow"], "bold"),
 
-        # Markdown, which reads like the website.
         ("markup.heading, markup.heading entity.name, entity.name.section", c["bright"], "bold"),
         ("punctuation.definition.heading, punctuation.definition.list.begin, punctuation.definition.quote,"
          " punctuation.definition.bold, punctuation.definition.italic, punctuation.definition.markdown", c["mid"], ""),
@@ -549,7 +533,6 @@ def tokens(c):
         ("markup.changed, punctuation.definition.changed", c["yellow"], ""),
         ("meta.diff.range, meta.diff.header", c["dim"], "italic"),
 
-        # LaTeX
         ("support.function.be.latex, support.function.section.latex, keyword.control.preamble.latex,"
          " support.function.general.tex", c["fg"], "bold"),
         ("variable.parameter.function.latex, entity.name.function.latex", c["fg"], ""),

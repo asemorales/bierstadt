@@ -1,6 +1,4 @@
-# Bierstadt Light: the light room, a book page in cream stock and sepia-black ink.
 # Same colours as the GTK theme (themes/bierstadt/gtk-3.0/_palette.css).
-# No accent colour. Weight, italics and inversion do the work.
 
 #:schema https://yazi-rs.github.io/schemas/theme.json
 
@@ -33,7 +31,6 @@ select_alt  = { fg = "#6E6965", bg = "#ECE5D5" }
 unset_main  = { fg = "#F2ECDF", bg = "#6E6965", bold = true }
 unset_alt   = { fg = "#6E6965", bg = "#ECE5D5" }
 
-# The hovered row is inverted, like a selection in the GTK theme.
 [indicator]
 parent  = { fg = "#231A15", bg = "#DDD4C1" }
 current = { fg = "#F2ECDF", bg = "#231A15" }
@@ -101,7 +98,6 @@ chord   = { fg = "#231A15", bold = true }
 action  = { fg = "#6E6965" }
 hovered = { fg = "#F2ECDF", bg = "#231A15" }
 
-# Folders bold, pictures italic like a plate caption, the rest plain ink.
 [filetype]
 rules = [
 	{ mime = "vfs/{absent,stale}", fg = "#9A9183" },

@@ -1,14 +1,4 @@
 #!/bin/bash
-# Set up the Bierstadt desktop on Xfce: the parts that install.sh cannot link.
-#
-#   - Fonts: Source Serif 4, IBM Plex Mono and DM Mono into ~/.local/share/fonts (Inter comes from apt)
-#   - Paintings: the original files into ~/Pictures/bierstadt
-#   - Icons: the bierstadt and bierstadt-dark icon themes, built from Suru++ Asprómauros
-#   - Cursors: Bibata Modern in the rooms' colours, cream for dark and ink for light
-#   - Xfce settings held by xfconf: fonts, window titles and shadows, workspaces,
-#     the single top panel, and app shortcuts
-#
-# Run install.sh first, then this, from inside an Xfce session.
 # Needs: curl, imagemagick, python3-yaml, python3-pil, conky (for the caption),
 # and the Suru++ Asprómauros icon theme.
 
@@ -20,7 +10,6 @@ PICTURES="$HOME/Pictures/bierstadt"
 
 step() { printf '\n\033[1m%s\033[0m\n' "$1"; }
 
-# ------------------------------------------------------------------ fonts
 step "Fonts"
 mkdir -p "$FONTS"
 gf=https://github.com/google/fonts/raw/main/ofl
@@ -33,8 +22,6 @@ for f in "sourceserif4/SourceSerif4%5Bopsz,wght%5D.ttf" "sourceserif4/SourceSeri
 done
 fc-cache -f "$HOME/.local/share/fonts" >/dev/null
 
-# --------------------------------------------------------------- paintings
-# Each file is the largest public-domain scan on Wikimedia Commons.
 step "Paintings"
 mkdir -p "$PICTURES"
 commons() {  # local-name "File:..."
@@ -59,17 +46,12 @@ commons church-twilight.jpg             "File:Frederic Edwin Church - Twilight i
 commons aivazovsky-ninth-wave.jpg       "File:Hovhannes Aivazovsky - The Ninth Wave - Google Art Project.jpg"
 commons kuindzhi-moonlit-dnieper.jpg    "File:Arkhip Kuindzhi - Ночь на Днепре - Google Art Project.jpg"
 
-# ------------------------------------------------------------------- icons
 step "Icons"
 python3 -I "$HOME/.local/share/icons/bierstadt-icons-build.py"
 
-# ----------------------------------------------------------------- cursors
-# bierstadt-mode picks the variant for each room.
 step "Cursors"
-# Bibata Modern recoloured in ink and paper, linked into ~/.icons as well.
 python3 -I "$(dirname "$(readlink -f "$0")")/themes/cursors/build.py"
 
-# -------------------------------------------------------------- xfconf
 step "Xfce settings"
 set_prop() {  # channel property type value
   xfconf-query -c "$1" -p "$2" -n -t "$3" -s "$4" 2>/dev/null || xfconf-query -c "$1" -p "$2" -s "$4"
@@ -81,8 +63,6 @@ set_ints() {  # channel property int...
   xfconf-query -c "$c" -p "$p" -n "${a[@]}" --force-array
 }
 
-# Type, after gwern.net: Inter for the interface, IBM Plex Mono for code,
-# Source Serif 4 for window titles
 set_prop xsettings /Gtk/FontName string "Inter 10"
 set_prop xsettings /Gtk/MonospaceFontName string "IBM Plex Mono 11"
 set_prop xsettings /Xft/Antialias int 1
@@ -90,7 +70,6 @@ set_prop xsettings /Xft/Hinting int 1
 set_prop xsettings /Xft/HintStyle string hintslight
 set_prop xsettings /Xft/RGBA string rgb
 
-# Windows: serif titles, rounded hairline frames and soft shadows, four workspaces
 set_prop xfwm4 /general/title_font string "Source Serif 4 Semi-Bold 10"
 set_prop xfwm4 /general/title_alignment string center
 set_prop xfwm4 /general/use_compositing bool true
@@ -104,12 +83,10 @@ set_prop xfwm4 /general/workspace_count int 4
 xfconf-query -c xfwm4 -p /general/workspace_names -r 2>/dev/null || true
 xfconf-query -c xfwm4 -p /general/workspace_names -n -t string -s I -t string -s II -t string -s III -t string -s IV
 
-# Shortcuts: Super+K for kitty, Super+O for Obsidian
 set_prop xfce4-keyboard-shortcuts "/commands/custom/<Super>k" string kitty
 set_prop xfce4-keyboard-shortcuts "/commands/custom/<Super>o" string obsidian
 
-# Panel: one 40px bar across the top. The plugin ids matter: the GTK theme
-# styles #applicationsmenu-1, #tasklist-2, #pager-30, #clock-23 and friends.
+# The GTK theme styles the panel plugins by id, so the ids matter.
 P=xfce4-panel
 xfconf-query -c $P -p /panels -r -R 2>/dev/null || true
 xfconf-query -c $P -p /plugins -r -R 2>/dev/null || true
@@ -149,12 +126,10 @@ set_prop $P /plugins/plugin-15/square-icons bool true
 set_prop $P /plugins/plugin-23/mode int 2
 set_prop $P /plugins/plugin-23/digital-layout int 3
 set_prop $P /plugins/plugin-23/digital-time-font string "Source Serif 4 11"
-# A running head in serif small caps: Wed 14 Oct · 09:41
 set_prop $P /plugins/plugin-23/digital-time-format string '<span font_family="Source Serif 4" font_features="smcp, c2sc" letter_spacing="600">%a %d %b · %H:%M</span>'
 set_prop $P /plugins/plugin-23/tooltip-format string "%A %d %B %Y"
 xfce4-panel -r
 
-# ------------------------------------------------------------------ room
 step "Room"
 bierstadt-mode data
 bierstadt-mode "$(bierstadt-mode status)"

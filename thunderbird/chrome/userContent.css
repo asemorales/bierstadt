@@ -1,16 +1,13 @@
-/* Bierstadt for the message reader.
- *
- * In a dark desktop Thunderbird reads mail in dark mode: it strips the bright
- * backgrounds and dark text from each email, then paints what is left on
- * --color-gray-90 with --color-white text (shared/messageBody.css).
- * Those two tokens become the Bierstadt night page and its cream text.
- * Plain-text quotes and forwarded headers use gray-70 and gray-80. */
+/* In dark mode Thunderbird strips each email's bright backgrounds and dark
+ * text, then paints what is left on --color-gray-90 with --color-white text
+ * (shared/messageBody.css). Plain-text quotes and forwarded headers use
+ * gray-70 and gray-80. */
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --color-gray-90: #191612 !important;   /* night: the page */
-    --color-gray-80: #25211C !important;   /* night_panel */
+    --color-gray-90: #191612 !important;
+    --color-gray-80: #25211C !important;
     --color-gray-70: #332E27 !important;
-    --color-white:   #F2EDE4 !important;   /* night_text */
+    --color-white:   #F2EDE4 !important;
   }
 }

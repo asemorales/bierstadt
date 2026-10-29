@@ -1,14 +1,4 @@
-/* Bierstadt widgets.
- * Shared by bierstadt and bierstadt-dark. Uses only the g_* roles from _roles.css,
- * never raw hex, so each variant only has to change its roles.
- *
- * Style:  gwern.net's colours (greys, no accent, inverted selection) and its rules,
- *         with 8px/12px rounded corners and soft shadows.
- * Type:   Inter for the interface, Source Serif 4 (small caps) for titles
- *         and headings, IBM Plex Mono for labels and code.
- * Motion: 250ms on the Bierstadt curve. */
-
-/* ------------------------------------------------------------------ base */
+/* Uses only the g_* roles from _roles.css, so each variant changes only its roles. */
 
 * {
   outline-color: @g_accent;
@@ -44,7 +34,6 @@ treeview.view,
   color: @g_fg;
 }
 
-/* Selection: inverted, ink and paper swapped, as on gwern.net. */
 *:selected,
 *:selected:focus,
 .view:selected,
@@ -107,10 +96,6 @@ button.link:link label { color: @g_fg_strong; }
 *:link:hover { color: @g_accent; }
 *:visited { color: @g_fg_dim; }
 
-/* --------------------------------------------------------------- buttons */
-
-/* Default buttons follow the site's .btn-secondary:
-   transparent, inset 1px ring at 20% ink, 5% ink fill and 40% ring on hover. */
 button,
 button.text-button,
 button.image-button,
@@ -156,7 +141,6 @@ button:disabled {
 }
 button:disabled label { color: @g_fg_disabled; box-shadow: none; }
 
-/* Primary: ink fill with paper text, 80% ink on hover. */
 button.suggested-action,
 button.default,
 .dialog-action-area button.suggested-action {
@@ -180,7 +164,6 @@ button.destructive-action {
 button.destructive-action label { color: @g_accent; }
 button.destructive-action:hover { background-color: alpha(@g_accent, 0.08); box-shadow: inset 0 0 0 1px @g_accent; }
 
-/* Quiet buttons inside toolbars, headers, sidebars, the panel */
 button.flat,
 .toolbar button,
 toolbar button,
@@ -219,8 +202,6 @@ headerbar button:checked,
 .linked > button:last-child  { border-top-right-radius: 8px; border-bottom-right-radius: 8px; }
 .linked > button:only-child  { border-radius: 8px; }
 
-/* ---------------------------------------------------------------- entries */
-
 entry,
 spinbutton:not(.vertical),
 spinbutton.vertical > entry,
@@ -255,8 +236,6 @@ combobox button.combo { padding: 8px 12px; }
 combobox arrow,
 button arrow { color: @g_fg_dim; }
 
-/* ---------------------------------------------- header bars and titlebars */
-
 headerbar,
 .titlebar:not(headerbar),
 .titlebar.default-decoration {
@@ -283,7 +262,6 @@ headerbar label.title {
 }
 headerbar .subtitle { color: @g_fg_dim; }
 
-/* Client-side decorated windows: 8px top corners, soft shadow */
 decoration {
   border-radius: 12px;
   box-shadow: 0 0 0 1px @g_border, 0 2px 4px @g_shadow, 0 12px 32px @g_shadow_strong;
@@ -295,7 +273,6 @@ decoration:backdrop { box-shadow: 0 0 0 1px @g_border, 0 6px 18px @g_shadow; }
 .csd.popup decoration,
 menu decoration { border-radius: 12px; box-shadow: 0 0 0 1px @g_border, 0 8px 24px @g_shadow_strong; }
 
-/* Window-control buttons drawn by GTK (CSD windows) */
 headerbar button.titlebutton,
 .titlebar button.titlebutton {
   min-width: 20px;
@@ -306,8 +283,6 @@ headerbar button.titlebutton,
   box-shadow: none;
 }
 headerbar button.titlebutton:hover { background-color: @g_hover; color: @g_fg_strong; }
-
-/* --------------------------------------------------------- menus, popovers */
 
 menubar,
 .menubar {
@@ -324,10 +299,6 @@ menubar > menuitem:hover,
   color: @g_fg_strong;
 }
 
-/* Every menu-like surface shares one rhythm, taken from the panel's
-   applications menu: 8px x 2px inside the card, 8px x 6px per item, 8px corners
-   on items, 12px on the card. Context menus, combo dropdowns, popovers,
-   panel menus and Whisker all use these values. */
 menu,
 .menu,
 .context-menu,
@@ -394,8 +365,6 @@ menu check,
 menu radio { color: @g_fg; }
 menu > arrow { background: @g_popover; border: none; color: @g_fg_dim; }
 
-/* --------------------------------------------------------------- tooltips */
-
 tooltip,
 tooltip.background,
 .tooltip {
@@ -408,8 +377,6 @@ tooltip.background,
 }
 tooltip *,
 tooltip label { color: @g_tooltip_fg; text-shadow: none; }
-
-/* ------------------------------------------------------------- scrollbars */
 
 scrollbar {
   background-color: transparent;
@@ -439,8 +406,6 @@ scrollbar button { background: none; box-shadow: none; color: @g_fg_dim; }
 scrolledwindow undershoot,
 scrolledwindow overshoot { background: none; box-shadow: none; }
 scrolledwindow junction { background: @g_bg; }
-
-/* ----------------------------------------------------------- notebook tabs */
 
 notebook {
   background-color: @g_bg;
@@ -483,8 +448,6 @@ stackswitcher button.text-button:checked {
   box-shadow: none;
 }
 
-/* --------------------------------------------------------- switch, check */
-
 switch {
   min-width: 30px;
   min-height: 16px;
@@ -515,7 +478,7 @@ switch:checked:backdrop slider {
   background-color: @g_knob;
   box-shadow: none;
 }
-/* GTK sizes the switch from its on/off icons; take them out of the measure */
+/* GTK sizes the switch from its on/off icons, so take them out of the measure */
 switch image {
   color: transparent;
   -gtk-icon-source: none;
@@ -558,8 +521,6 @@ radio:checked:disabled { background-color: @g_border; color: @g_fg_disabled; }
 menu check, menu radio,
 treeview check, treeview radio { margin: 0; }
 
-/* ---------------------------------------------- scales and progress bars */
-
 scale trough,
 progressbar trough,
 levelbar trough {
@@ -595,8 +556,6 @@ levelbar block.low  { background-color: @g_fg_dim; }
 levelbar block.high,
 levelbar block.full { background-color: @g_fg_strong; }
 
-/* --------------------------------------------------------------- sidebars */
-
 .sidebar,
 placessidebar,
 placessidebar list,
@@ -629,7 +588,6 @@ placessidebar > viewport.frame { border: none; }
 
 paned > separator { background-color: @g_border; background-image: none; min-width: 1px; min-height: 1px; }
 
-/* Thunar: sidebar tree and the location bar */
 .thunar .sidebar,
 .thunar placessidebar,
 .thunar .shortcuts-pane,
@@ -650,10 +608,8 @@ window.thunar paned > scrolledwindow:first-child treeview.view {
 }
 .thunar .standard-view iconview:selected,
 .standard-view iconview:selected { background-color: @g_item_sel_bg; color: @g_item_sel_fg; border-radius: 8px; }
-/* Roomier file rows, like an index with generous leading */
 .thunar .standard-view treeview.view,
 .standard-view treeview.view { padding: 10px 10px; }
-/* Margin around the whole list, like a mount around a print */
 .standard-view { padding: 14px 22px 10px; background-color: @g_view; }
 .standard-view treeview.view header button:first-child { border-top-left-radius: 8px; }
 .thunar .standard-view treeview.view header button { padding: 10px 12px; }
@@ -661,8 +617,6 @@ window.thunar paned > scrolledwindow:first-child treeview.view {
 .thunar .statusbar,
 .thunar statusbar { color: @g_fg_dim; font-family: "IBM Plex Mono"; font-size: 9pt; }
 .path-bar-button.toggle:checked { box-shadow: inset 0 -2px @g_fg_strong; }
-
-/* -------------------------------------------------------- lists and rows */
 
 list,
 listview { background-color: @g_view; color: @g_fg; }
@@ -673,7 +627,6 @@ list.content row:not(:last-child) { border-bottom: 1px solid @g_border; }
 list row { padding: 4px 8px; }
 treeview.view { padding: 4px 3px; }
 
-/* Framed groups read like mounted prints: rounded, with a soft shadow */
 frame > border,
 .frame {
   border: 1px solid @g_border;
@@ -684,8 +637,6 @@ scrolledwindow.frame,
 frame.view { border-color: @g_border; }
 list.frame,
 list.content { border-radius: 12px; }
-
-/* ------------------------------------------------------------- toolbars */
 
 toolbar,
 .toolbar,
@@ -715,8 +666,6 @@ infobar > revealer > box {
 }
 infobar.error > revealer > box,
 infobar.error { box-shadow: inset 3px 0 @g_accent; }
-
-/* -------------------------------------------------------- calendar, misc */
 
 /* No vertical padding: GtkCalendar offsets the selection box by it but not the numbers. */
 calendar { margin: 10px; padding: 0 14px; color: @g_fg; border: 1px solid @g_border; border-radius: 8px; }
@@ -751,7 +700,6 @@ messagedialog label.title {
   box-shadow: 0 8px 24px @g_shadow_strong;
 }
 
-/* Text and pills that read like the site's .label and .pill */
 .pill,
 .badge {
   padding: 3px 10px;
@@ -760,11 +708,7 @@ messagedialog label.title {
   color: @g_fg;
 }
 
-/* ============================================================== Xfce bits */
-
-/* xfce4-panel: translucent paper, like the site's nav bar, with a stone hairline.
-   Only the panel window itself gets the colour; nested widgets stay clear so the
-   alpha does not stack. */
+/* Only the panel window gets the colour, so the alpha does not stack. */
 .xfce4-panel.background {
   padding: 0 20px;
   background-color: @g_panel;
@@ -805,7 +749,6 @@ messagedialog label.title {
 .xfce4-panel separator,
 .xfce4-panel .separator { background: transparent; }
 
-/* Applications menu as a small text label: MENU */
 #applicationsmenu-1 button,
 #whiskermenu-1 button {
   padding: 4px 20px;
@@ -825,7 +768,6 @@ messagedialog label.title {
   color: @g_fg_strong;
 }
 
-/* Window buttons: quiet, with a 2px ink line under the active window */
 #tasklist-2 button {
   margin: 0 3px;
   padding: 4px 18px;
@@ -840,7 +782,6 @@ messagedialog label.title {
 #tasklist-2 button.urgent,
 #tasklist-2 button:hover.urgent { box-shadow: inset 0 -2px @g_accent; }
 
-/* Workspace switcher: small pills, numbered I to IV, the active one inverted */
 #pager-30 button {
   min-width: 20px;
   min-height: 0;
@@ -864,7 +805,6 @@ messagedialog label.title {
 }
 #pager-30 button:checked label { color: @g_selected_fg; }
 
-/* Clock: a running head in serif small caps, e.g. Wed 14 Oct · 09:41 */
 #clock-23 label,
 #clock-23 button label {
   font-family: "Source Serif 4";
@@ -873,10 +813,8 @@ messagedialog label.title {
 }
 #clock-23 button { padding: 4px 24px; }
 
-/* Indicators */
 #systray-15,
 #systray-15 button { padding: 0 10px; }
-/* breathing room where the old separators sit */
 #separator-7, #separator-8, #separator-14 { min-width: 28px; }
 /* The panel window ignores its own padding, so the end items carry it */
 #applicationsmenu-1 button { margin-left: 16px; }
@@ -887,7 +825,6 @@ messagedialog label.title {
 #systemload-6 progressbar trough { background-color: @g_trough; min-width: 4px; }
 #systemload-6 progressbar progress { background-color: @g_fg_dim; }
 
-/* Whisker menu, if it is ever used */
 #whiskermenu-window,
 #whiskermenu-window > frame > border {
   background-color: @g_popover;
@@ -899,13 +836,11 @@ messagedialog label.title {
 #whiskermenu-window treeview.view,
 #whiskermenu-window iconview { background-color: @g_popover; }
 
-/* App finder */
 #xfce4-appfinder,
 window.xfce4-appfinder { background-color: @g_bg; }
 #xfce4-appfinder treeview.view.sidebar,
 #xfce4-appfinder .sidebar treeview.view { background-color: @g_bg_alt; }
 
-/* Xfce settings dialogs: the sidebar in the settings manager */
 #XfceSettingsManagerDialog iconview,
 .xfce4-settings-manager iconview { background-color: @g_bg; }
 XfceTitledDialog .dialog-vbox > box:first-child { background-color: @g_bg; }
@@ -921,7 +856,6 @@ XfceHeading {
   padding-bottom: 6px;
 }
 
-/* xfwm4 tabwin (alt-tab) */
 #xfwm-tabwin {
   padding: 12px;
   background-color: @g_popover;
@@ -941,15 +875,10 @@ XfceHeading {
   color: @g_selected_fg;
 }
 
-/* Terminal: the menubar is off, but tabs follow the notebook rules above.
-   VTE paints its own background, which comes from terminalrc. */
 vte-terminal { padding: 12px; }
 .xfce4-terminal notebook > header { background-color: @g_bg; }
 
-/* ================================================== unfocused windows
-   Adwaita restyles everything in :backdrop. Keep the same quiet look,
-   one step dimmer, so unfocused windows don't lose their rules. */
-
+/* Adwaita restyles everything in :backdrop. */
 button:backdrop,
 combobox button:backdrop {
   background-color: transparent;
@@ -1004,7 +933,7 @@ row:selected:backdrop { background-color: @g_item_sel_bg; color: @g_item_sel_fg;
 
 /* Menus count as unfocused (the panel never takes focus, and a submenu
    steals it from its parent). Adwaita then clears the hover background and
-   dims the text, which left black labels on the dark menu. Keep menus as they are. */
+   dims the text, which leaves black labels on the dark menu. */
 menu menuitem:backdrop,
 .menu menuitem:backdrop { color: @g_fg; }
 menu menuitem:hover:backdrop,
@@ -1013,9 +942,7 @@ menu menuitem:hover:backdrop,
 menu menuitem:disabled:backdrop,
 menu menuitem:disabled:backdrop label { color: @g_fg_disabled; }
 
-/* ---------------------------------------------------------- login screen */
-/* lightdm-gtk-greeter, which names its widgets. The painting fills the
-   screen; the login box is a card hung on it, the top bar a strip of wall. */
+/* lightdm-gtk-greeter */
 
 #panel_window {
   background-color: @g_panel;
